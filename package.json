@@ -1,0 +1,26 @@
+{
+  "name": "flowops",
+  "version": "1.0.0",
+  "description": "Developer infrastructure platform — API Gateway, Key Management, Rate Limiting, Logging, Analytics",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up",
+    "dev:local": "concurrently --kill-others \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:worker\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:worker": "cd worker && npm run dev",
+    "build": "cd frontend && npm run build",
+    "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
+    "test": "cd backend && npm test",
+    "db:migrate": "cd backend && npx prisma migrate dev",
+    "db:seed": "node scripts/seed-db.js",
+    "db:reset": "node scripts/reset-db.js",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down"
+  },
+  "keywords": ["api-gateway", "developer-tools", "infrastructure", "saas"],
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
