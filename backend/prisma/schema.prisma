@@ -1,0 +1,127 @@
+// ─── Prisma Schema ─── FlowOps Database Design
+// PostgreSQL with 6 models, composite indexes for analytics performance
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── User ──────────────────────────────────────
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  name             String
+  passwordHash     String
+  subscriptionTier String   @default("FREE") // FREE, PRO, MAX
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  apis Api[]
+
+  @@map("users")
+}
+
+// ─── API ───────────────────────────────────────
+model Api {
+  id                   String   @id @default(uuid())
+  name                 String
+  slug                 String   @unique  // used in gateway route: /gateway/:slug/*
+  baseUrl              String
+  userId               String
+  isActive             Boolean  @default(true)
+  fallbackProviders    String   @default("gemini,anthropic")
+  retryCount           Int      @default(2)
+  loadBalancingWeights String   @default("{\"openai\":50,\"gemini\":30,\"anthropic\":20}")
+  slackWebhookUrl      String?  @default("")
+  errorAlertThreshold  Float    @default(5.0)
+  alertWindowMinutes   Int      @default(5)
+  costLimitAlert       Float    @default(100.0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKeys   ApiKey[]
+  logs      RequestLog[]
+  rateLimit RateLimit?
+  metrics   ApiMetrics[]
+
+  @@index([userId])
+  @@map("apis")
+}
+
+// ─── API Key ───────────────────────────────────
+model ApiKey {
+  id        String   @id @default(uuid())
+  apiId     String
+  name      String
+  keyHash   String   @unique  // SHA-256 hash — raw key shown once
+  keyPrefix String             // first 8 chars for display: sk_live_abc
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  api Api @relation(fields: [apiId], references: [id], onDelete: Cascade)
+
+  @@index([keyHash])
+  @@index([apiId])
+  @@map("api_keys")
+}
+
+// ─── Request Log ───────────────────────────────
+model RequestLog {
+  id               String   @id @default(uuid())
+  apiId            String
+  endpoint         String
+  method           String
+  statusCode       Int
+  latencyMs        Int
+  ip               String?
+  apiKeyId         String?
+  requestId        String?
+  tokensUsed       Int      @default(0)
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  cacheHit         Boolean  @default(false)
+  provider         String?
+  model            String?
+  timestamp        DateTime @default(now())
+
+  api Api @relation(fields: [apiId], references: [id], onDelete: Cascade)
+
+  @@index([apiId, timestamp])
+  @@index([statusCode])
+  @@index([apiId, statusCode])
+  @@index([timestamp])
+  @@map("request_logs")
+}
+
+// ─── Rate Limit ────────────────────────────────
+model RateLimit {
+  id                String @id @default(uuid())
+  apiId             String @unique
+  requestsPerMinute Int    @default(100)
+  requestsPerDay    Int    @default(5000)
+
+  api Api @relation(fields: [apiId], references: [id], onDelete: Cascade)
+
+  @@map("rate_limits")
+}
+
+// ─── API Metrics (Aggregated by Worker) ────────
+model ApiMetrics {
+  id           String   @id @default(uuid())
+  apiId        String
+  minuteBucket DateTime   // truncated to minute for aggregation
+  requestCount Int      @default(0)
+  errorCount   Int      @default(0)
+  totalLatency Int      @default(0)  // sum of latency for avg calculation
+
+  api Api @relation(fields: [apiId], references: [id], onDelete: Cascade)
+
+  @@unique([apiId, minuteBucket])
+  @@index([apiId, minuteBucket])
+  @@map("api_metrics")
+}
