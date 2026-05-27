@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logos/Logo 1.png" alt="FlowOps Logo" width="2000" />
+<img src="logos/Logo 1.png" alt="FlowOps Logo" width="1000" />
 
 # FlowOps — The AI Control Plane
 
