@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+tone_instructions: "Rigorous, security-focused, performance-oriented, and highly professional. Focus on enterprise compliance, API contract drift, latency limits, and secure data handling."
+early_access: true
+reviews:
+  profile: "chill"
+  request_changes_workflow: true
+  high_level_summary: true
+  collapse_walkthrough: false
+  review_status: true
+  path_instructions:
+    - path: "backend/src/gateway/**"
+      instructions: "Ensure zero-downtime high-availability (HA). Verify connection pooling limits, enforce HTTP keep-alive optimization, and block any logging of raw API payloads or auth keys to prevent data leaks. CodeRabbit must flag any unmasked credentials or sensitive prompt logging."
+    - path: "backend/src/gateway/core/promptOptimizer.js"
+      instructions: "Enforce strict runtime isolation. The prompt optimizer must handle third-party timeouts in <300ms, fallback immediately to raw prompt routing, and protect user input sanitization rules. Ensure no cache contamination occurs in Redis key mapping."
+    - path: "backend/prisma/**"
+      instructions: "Audit schemas for schema contract drift and breaking migrations. Enforce composite index strategies on telemetry logs table to support sub-50ms analytics fetches under high volume."
+    - path: "frontend/src/**"
+      instructions: "React 19 & TailwindCSS v4. Enforce strict CSP policies, prevent XSS vulnerabilities in user-facing prompt logs, and optimize layout paint times during real-time updates."
+  tools:
+    github-checks:
+      enabled: true
+    shellcheck:
+      enabled: true
+chat:
+  auto_reply: true

@@ -1,5 +1,6 @@
 const express = require('express');
 const { executeAiProxy } = require('./core/universalRouter');
+const { optimizePrompt } = require('./core/promptOptimizer');
 const { prisma } = require('../config/database');
 const { hashApiKey } = require('../utils/generateApiKey');
 const { logRequestAsync } = require('./core/observability');
@@ -172,6 +173,27 @@ router.post('/v1/chat/completions', async (req, res) => {
         req.headers['x-gemini-key'] = isMock ? 'mock-key' : process.env.GEMINI_API_KEY;
         req.headers['x-anthropic-key'] = isMock ? 'mock-key' : process.env.ANTHROPIC_API_KEY;
 
+        // 3.5. ─── Codex Prompt Optimizer ───
+        // Compresses verbose prompts via GPT-4o-mini before routing to save tokens
+        let optimizationStats = null;
+        const shouldOptimize = req.headers['x-flowops-optimize'] !== 'false'; // Enabled by default
+        
+        if (shouldOptimize && req.body.messages) {
+            const openaiKey = isMock ? 'mock-key' : process.env.OPENAI_API_KEY;
+            const { optimizedMessages, stats } = await optimizePrompt(req.body.messages, openaiKey);
+            req.body.messages = optimizedMessages;
+            optimizationStats = stats;
+            
+            if (stats.savedTokens > 0) {
+                logger.info('[Codex Optimizer] Prompt compressed', {
+                    originalTokens: stats.originalTokens,
+                    optimizedTokens: stats.optimizedTokens,
+                    savedTokens: stats.savedTokens,
+                    savingsPercent: stats.savingsPercent + '%'
+                });
+            }
+        }
+
         // 4. Resolve Retries Count (from header, db record, or default to 2)
         const customRetries = req.headers['x-flowops-retries'];
         const dbRetries = apiKeyRecord?.api?.retryCount;
@@ -234,12 +256,30 @@ router.post('/v1/chat/completions', async (req, res) => {
                 completionTokens: result.data?.usage?.completion_tokens || 0,
                 cacheHit: result.cached || false,
                 provider: result.provider || providerStr,
-                model: result.model || requestedModel
+                model: result.model || requestedModel,
+                promptOptimized: optimizationStats ? optimizationStats.savedTokens > 0 : false,
+                originalPromptTokens: optimizationStats?.originalTokens || 0,
+                tokensSaved: optimizationStats?.savedTokens || 0,
+                optimizationPercent: optimizationStats?.savingsPercent || 0
             });
         }
 
-        // 8. Return response
-        return res.status(result.status).json(result.data);
+        // 8. Return response with optimization metadata
+        const responsePayload = {
+            ...result.data,
+            ...(optimizationStats && optimizationStats.savedTokens > 0 ? {
+                _flowops: {
+                    prompt_optimization: {
+                        original_tokens: optimizationStats.originalTokens,
+                        optimized_tokens: optimizationStats.optimizedTokens,
+                        tokens_saved: optimizationStats.savedTokens,
+                        savings_percent: optimizationStats.savingsPercent,
+                        cached: optimizationStats.cached || false
+                    }
+                }
+            } : {})
+        };
+        return res.status(result.status).json(responsePayload);
 
     } catch (error) {
         const latencyMs = Date.now() - startTime;
