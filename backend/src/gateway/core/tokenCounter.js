@@ -1,5 +1,5 @@
 const { getEncoding } = require('js-tiktoken');
-const enc = getEncoding("cl100k_base");
+const enc = getEncoding('cl100k_base');
 
 /**
  * Calculates the exact token cost of an incoming LLM prompt.

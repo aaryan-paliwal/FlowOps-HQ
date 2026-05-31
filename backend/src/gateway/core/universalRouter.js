@@ -8,12 +8,12 @@ const { calculatePromptTokens } = require('./tokenCounter');
 
 const translators = {
     openai: {
-        getUrl: (model) => 'https://api.openai.com/v1/chat/completions',
+        getUrl: () => 'https://api.openai.com/v1/chat/completions',
         transformRequest: (body) => body,
         transformResponse: (data) => data
     },
     anthropic: {
-        getUrl: (model) => 'https://api.anthropic.com/v1/messages',
+        getUrl: () => 'https://api.anthropic.com/v1/messages',
         transformRequest: (body) => {
             let systemPrompt = '';
             const messages = body.messages.filter(m => {
@@ -170,34 +170,9 @@ async function executeAiProxy(req, providerStr, fallbackProviders = [], retryCou
             throw err;
         }
 
-        if (targetApiKey === 'mock-key') {
-            // Mock response to test Caching & Limits without real billing
-            logger.info(`[Mock] Simulating mock execution for provider: ${providerStr}`);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating latency
-            responseData = {
-                id: `chatcmpl-mock-${providerStr}-${Date.now()}`,
-                object: 'chat.completion',
-                created: Math.floor(Date.now() / 1000),
-                model: transformedBody.model || 'mock-model',
-                choices: [{
-                    index: 0,
-                    message: {
-                        role: 'assistant',
-                        content: `Hello! I am a resilient simulated response from FlowOps Gateway via ${providerStr.toUpperCase()}.`
-                    },
-                    finish_reason: 'stop'
-                }],
-                usage: {
-                    prompt_tokens: promptTokens,
-                    completion_tokens: 15,
-                    total_tokens: promptTokens + 15
-                }
-            };
-        } else {
-            const targetUrl = provider.getUrl(req.body.model, targetApiKey);
-            const response = await axios.post(targetUrl, transformedBody, { headers, timeout: 30000 });
-            responseData = provider.transformResponse(response.data);
-        }
+        const targetUrl = provider.getUrl(req.body.model, targetApiKey);
+        const response = await axios.post(targetUrl, transformedBody, { headers, timeout: 30000 });
+        responseData = provider.transformResponse(response.data);
 
         // Save to Redis Cache for 1 hour
         await redis.setex(cacheKey, 3600, JSON.stringify(responseData));

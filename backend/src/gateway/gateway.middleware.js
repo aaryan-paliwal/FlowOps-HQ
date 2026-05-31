@@ -1,4 +1,5 @@
-const { prisma } = require('../config/database');
+const { eq } = require('drizzle-orm');
+const { db, apis, apiKeys } = require('../config/database');
 const { redis } = require('../config/redis');
 const { hashApiKey } = require('../utils/generateApiKey');
 const { proxyRequest } = require('./gateway.proxy');
@@ -16,7 +17,7 @@ const logQueue = new Queue('request-logs', {
  * Order: extractApiName → validateApiKey → checkRateLimit → proxyForward → pushLogToQueue
  *
  * This is ISOLATED from core business modules.
- * It only depends on: Prisma (read), Redis (rate limit), BullMQ (queue).
+ * It only depends on: Drizzle (read), Redis (rate limit), BullMQ (queue).
  */
 async function gatewayPipeline(req, res) {
     const startTime = Date.now();
@@ -26,10 +27,11 @@ async function gatewayPipeline(req, res) {
 
     try {
         // ── Step 1: Extract API Name → Lookup API record ──
-        api = await prisma.api.findUnique({
-            where: { slug: apiName },
-            include: { rateLimit: true },
-        });
+        const [apiRow] = await db.select().from(apis)
+            .where(eq(apis.slug, apiName))
+            .limit(1);
+
+        api = apiRow;
 
         if (!api || !api.isActive) {
             return response.error(res, `API '${apiName}' not found`, 404);
@@ -42,20 +44,27 @@ async function gatewayPipeline(req, res) {
         }
 
         const keyHash = hashApiKey(rawKey);
-        apiKeyRecord = await prisma.apiKey.findUnique({
-            where: { keyHash },
-        });
+        const [keyRow] = await db.select().from(apiKeys)
+            .where(eq(apiKeys.keyHash, keyHash))
+            .limit(1);
+
+        apiKeyRecord = keyRow;
 
         if (!apiKeyRecord || apiKeyRecord.apiId !== api.id || apiKeyRecord.revoked) {
             return response.error(res, 'Invalid or revoked API key', 403);
         }
 
         // ── Step 3: Check Rate Limit (Sliding Window Log) ──
-        if (api.rateLimit) {
+        // Load rate limit for this API
+        const { rateLimits } = require('../config/database');
+        const [rateLimit] = await db.select().from(rateLimits)
+            .where(eq(rateLimits.apiId, api.id)).limit(1);
+
+        if (rateLimit) {
             const rateLimitKey = `ratelimit:${keyHash}`;
             const now = Date.now();
             const windowMs = 60 * 1000; // 1 minute window
-            const limit = api.rateLimit.requestsPerMinute;
+            const limit = rateLimit.requestsPerMinute;
 
             // Atomic pipeline: remove expired → count → add → set TTL
             const pipeline = redis.pipeline();

@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: flowops-backend
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm run db:push && node src/server.js"
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: "https://flowops-dashboard.vercel.app"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+
+  - type: redis
+    name: flowops-cache
+    region: ohio
+    plan: free
+    ipAllowList: []

@@ -1,15 +1,10 @@
-const { PrismaClient } = require('@prisma/client');
-const logger = require('../utils/logger');
+// ─── Database Bridge ───
+// This file re-exports the Drizzle ORM instance under `db`
+// and provides access to the raw SQL driver and schema tables.
+//
+// Migration Note: Previously exported `prisma` (Prisma Client).
+// Now exports `db` (Drizzle ORM) for near-zero overhead SQL queries.
 
-// ─── Singleton Prisma client ───
-const prisma = new PrismaClient({
-    log: [
-        { level: 'error', emit: 'event' },
-        { level: 'warn', emit: 'event' },
-    ],
-});
+const { db, sql, schema } = require('../db');
 
-prisma.$on('error', (e) => logger.error('Prisma error', { message: e.message }));
-prisma.$on('warn', (e) => logger.warn('Prisma warning', { message: e.message }));
-
-module.exports = { prisma };
+module.exports = { db, sql, ...schema };

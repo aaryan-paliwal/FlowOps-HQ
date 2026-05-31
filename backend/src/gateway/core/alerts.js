@@ -1,4 +1,5 @@
-const { prisma } = require('../../config/database');
+const { eq, gte, and, count } = require('drizzle-orm');
+const { db, apis, requestLogs } = require('../../config/database');
 const { redis } = require('../../config/redis');
 const logger = require('../../utils/logger');
 
@@ -19,12 +20,12 @@ const MODEL_RATES = {
 function calculateLogCost(log) {
     const provider = log.provider || 'openai';
     const model = log.model || 'gpt-4o-mini';
-    
+
     let rate = MODEL_RATES[provider] || MODEL_RATES.openai;
     if (MODEL_RATES[model]) {
         rate = MODEL_RATES[model];
     }
-    
+
     const tokens = log.promptTokens + log.completionTokens;
     return (tokens / 1000000) * rate;
 }
@@ -36,9 +37,9 @@ async function postSlackAlert(webhookUrl, apiName, type, details) {
     try {
         const isErrorRate = type === 'ERROR_RATE';
         const color = isErrorRate ? '#FF3366' : '#FF9900';
-        const title = isErrorRate 
-            ? '🚨 *FlowOps Warning: High Gateway Error Rate*' 
-            : '💰 *FlowOps Limit: Workspace Cost-Cap Alert*';
+        const title = isErrorRate
+            ? '🚨 *FlowOps HQ Warning: High Gateway Error Rate*'
+            : '💰 *FlowOps HQ Limit: Workspace Cost-Cap Alert*';
 
         const fields = isErrorRate ? [
             { title: 'API Gateway', value: `*${apiName}*`, short: true },
@@ -56,7 +57,7 @@ async function postSlackAlert(webhookUrl, apiName, type, details) {
         ];
 
         const payload = {
-            username: 'FlowOps Alert Manager',
+            username: 'FlowOps HQ Alert Manager',
             icon_emoji: isErrorRate ? ':alert:' : ':moneybag:',
             attachments: [
                 {
@@ -64,7 +65,7 @@ async function postSlackAlert(webhookUrl, apiName, type, details) {
                     color,
                     pretext: title,
                     fields: fields.map(f => ({ title: f.title, value: f.value, short: f.short })),
-                    footer: 'FlowOps Resilient Edge Proxy Alerts',
+                    footer: 'FlowOps HQ Resilient Edge Proxy Alerts',
                     ts: Math.floor(Date.now() / 1000)
                 }
             ]
@@ -79,7 +80,7 @@ async function postSlackAlert(webhookUrl, apiName, type, details) {
         if (!res.ok) {
             throw new Error(`Slack returned status ${res.status}`);
         }
-        
+
         logger.info(`Slack notification sent successfully for ${apiName} (${type})`);
     } catch (err) {
         logger.error('Failed to send Slack alert message', { error: err.message, apiName, type });
@@ -89,14 +90,12 @@ async function postSlackAlert(webhookUrl, apiName, type, details) {
 /**
  * Assesses error rates and monthly token budget caps for an API and pushes alerts.
  * This runs fire-and-forget inside logRequestAsync.
- * 
- * @param {string} apiId 
+ *
+ * @param {string} apiId
  */
 async function checkAndTriggerAlerts(apiId) {
     try {
-        const api = await prisma.api.findUnique({
-            where: { id: apiId }
-        });
+        const [api] = await db.select().from(apis).where(eq(apis.id, apiId)).limit(1);
 
         if (!api || !api.slackWebhookUrl) {
             return; // Webhook alerts not configured
@@ -106,15 +105,19 @@ async function checkAndTriggerAlerts(apiId) {
 
         // ─── 1. Error Rate Alert Evaluation ───
         const windowStart = new Date(now.getTime() - api.alertWindowMinutes * 60 * 1000);
-        
-        const [totalRequests, failedRequests] = await Promise.all([
-            prisma.requestLog.count({
-                where: { apiId, timestamp: { gte: windowStart } }
-            }),
-            prisma.requestLog.count({
-                where: { apiId, timestamp: { gte: windowStart }, statusCode: { gte: 400 } }
-            })
-        ]);
+
+        const [totalResult] = await db.select({ count: count() }).from(requestLogs)
+            .where(and(eq(requestLogs.apiId, apiId), gte(requestLogs.timestamp, windowStart)));
+
+        const [failedResult] = await db.select({ count: count() }).from(requestLogs)
+            .where(and(
+                eq(requestLogs.apiId, apiId),
+                gte(requestLogs.timestamp, windowStart),
+                gte(requestLogs.statusCode, 400)
+            ));
+
+        const totalRequests = totalResult?.count || 0;
+        const failedRequests = failedResult?.count || 0;
 
         if (totalRequests >= 5) { // minimum threshold of samples to avoid false positives
             const currentErrorRate = (failedRequests / totalRequests) * 100;
@@ -122,7 +125,7 @@ async function checkAndTriggerAlerts(apiId) {
                 // Rate limit/cooldown check: 15 minutes window to avoid spam
                 const cooldownKey = `alert_cooldown:error:${apiId}`;
                 const cooldownActive = await redis.get(cooldownKey);
-                
+
                 if (!cooldownActive) {
                     await redis.set(cooldownKey, 'true', 'EX', 15 * 60);
                     logger.warn(`Error threshold exceeded for ${api.name}. Dispatching Slack Alert.`);
@@ -139,12 +142,15 @@ async function checkAndTriggerAlerts(apiId) {
 
         // ─── 2. Monthly Budget Cap Evaluation ───
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        
+
         // Retrieve monthly logs to calculate live costs
-        const monthlyLogs = await prisma.requestLog.findMany({
-            where: { apiId, timestamp: { gte: startOfMonth } },
-            select: { promptTokens: true, completionTokens: true, provider: true, model: true }
-        });
+        const monthlyLogs = await db.select({
+            promptTokens: requestLogs.promptTokens,
+            completionTokens: requestLogs.completionTokens,
+            provider: requestLogs.provider,
+            model: requestLogs.model,
+        }).from(requestLogs)
+            .where(and(eq(requestLogs.apiId, apiId), gte(requestLogs.timestamp, startOfMonth)));
 
         let totalCost = 0;
         let totalTokens = 0;
@@ -161,7 +167,7 @@ async function checkAndTriggerAlerts(apiId) {
             if (!cooldownActive) {
                 await redis.set(cooldownKey, 'true', 'EX', 24 * 60 * 60);
                 logger.warn(`Cost limit exceeded for ${api.name}. Dispatching Slack Alert.`);
-                
+
                 const billingMonth = now.toLocaleString('default', { month: 'long', year: 'numeric' });
                 await postSlackAlert(api.slackWebhookUrl, api.name, 'COST_CAP', {
                     billingMonth,

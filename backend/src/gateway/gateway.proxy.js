@@ -16,7 +16,7 @@ async function proxyRequest(req, targetUrl) {
     const forwardedHeaders = { ...req.headers };
     delete forwardedHeaders['host'];
     delete forwardedHeaders['connection'];
-    delete forwardedHeaders['x-api-key'];  // don't forward FlowOps key to target
+    delete forwardedHeaders['x-api-key'];  // don't forward FlowOps HQ key to target
     delete forwardedHeaders['content-length'];
 
     // Add tracing headers

@@ -1,4 +1,4 @@
-const { prisma } = require('../config/database');
+const { sql: sqlInstance } = require('../config/database');
 const { redis } = require('../config/redis');
 const response = require('../utils/formatResponse');
 
@@ -16,7 +16,7 @@ function registerRoutes(app) {
     // ─── Health Check ───
     app.get('/health', async (req, res) => {
         try {
-            await prisma.$queryRaw`SELECT 1`;
+            await sqlInstance`SELECT 1`;
             const redisPing = await redis.ping();
 
             return response.success(res, {
@@ -30,7 +30,7 @@ function registerRoutes(app) {
             });
         } catch (err) {
             return response.error(res, 'Health check failed', 503, {
-                database: err.message.includes('prisma') ? 'disconnected' : 'connected',
+                database: err.message.includes('postgres') ? 'disconnected' : 'connected',
                 redis: 'unknown',
             });
         }

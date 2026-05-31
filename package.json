@@ -4,7 +4,7 @@
   "description": "Developer infrastructure platform — API Gateway, Key Management, Rate Limiting, Logging, Analytics",
   "private": true,
   "scripts": {
-    "dev": "docker compose up",
+    "dev": "npm run dev:local",
     "dev:local": "concurrently --kill-others \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:worker\"",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
@@ -12,9 +12,9 @@
     "build": "cd frontend && npm run build",
     "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
     "test": "cd backend && npm test",
-    "db:migrate": "cd backend && npx prisma migrate dev",
-    "db:seed": "node scripts/seed-db.js",
-    "db:reset": "node scripts/reset-db.js",
+    "db:push": "cd backend && npm run db:push",
+    "db:seed": "cd backend && node src/seed-db.js",
+    "db:studio": "cd backend && npm run db:studio",
     "docker:up": "docker compose up --build -d",
     "docker:down": "docker compose down"
   },

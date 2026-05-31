@@ -1,0 +1,17 @@
+{
+    "name": "flowops-worker",
+    "version": "1.0.0",
+    "description": "FlowOps Background Worker — BullMQ processors for log ingestion and analytics aggregation",
+    "main": "src/index.js",
+    "scripts": {
+        "dev": "node --watch src/index.js",
+        "start": "node src/index.js"
+    },
+    "dependencies": {
+        "bullmq": "^5.34.8",
+        "dotenv": "^16.4.7",
+        "drizzle-orm": "^0.45.2",
+        "ioredis": "^5.4.2",
+        "winston": "^3.17.0"
+    }
+}

@@ -2,7 +2,7 @@
 
 <img src="logos/Logo 1.png" alt="FlowOps Logo" width="1000" />
 
-# FlowOps — The AI Control Plane
+# FlowOps HQ — The AI Control Plane
 
 **Route prompts. Slash token costs. Ship AI faster.**
 
@@ -17,7 +17,7 @@
 
 ---
 
-**FlowOps** is an open-source, production-grade AI gateway that gives teams a unified control plane to route LLM traffic across OpenAI, Anthropic, and Google Gemini — with built-in semantic caching, token-level rate limiting, automatic retries with fallback, and real-time observability.
+**FlowOps HQ** is an open-source, production-grade AI gateway that gives teams a unified control plane to route LLM traffic across OpenAI, Anthropic, and Google Gemini — with built-in semantic caching, token-level rate limiting, automatic retries with fallback, and real-time observability.
 
 [Live Demo](#) · [Documentation](#) · [Report Bug](https://github.com/aaryan-paliwal/flowops-ai-gateway/issues) · [Request Feature](https://github.com/aaryan-paliwal/flowops-ai-gateway/issues)
 
@@ -25,9 +25,9 @@
 
 ---
 
-## ⚡ Why FlowOps?
+## ⚡ Why FlowOps HQ?
 
-| Problem | FlowOps Solution |
+| Problem | FlowOps HQ Solution |
 |---|---|
 | 🔀 Managing multiple LLM providers is painful | **Universal Router** — Single endpoint, any model, any provider |
 | 💸 Token costs spiral out of control | **Semantic Caching** — Identical prompts skip the LLM entirely (< 20ms) |
@@ -47,7 +47,7 @@ graph TB
         A["Python SDK / Node.js SDK / cURL"]
     end
 
-    subgraph FlowOps["⚡ FlowOps AI Control Plane"]
+    subgraph FlowOps HQ["⚡ FlowOps HQ AI Control Plane"]
         B["API Gateway<br/>Express.js + Auth Middleware"]
         C["Codex Prompt Optimizer<br/>Token Compression Engine"]
         D["Semantic Cache<br/>Redis Vector Similarity"]
@@ -87,7 +87,7 @@ graph TB
     N --> B
     O --> N
 
-    style FlowOps fill:#0d1117,stroke:#30363d,color:#e6edf3
+    style FlowOps HQ fill:#0d1117,stroke:#30363d,color:#e6edf3
     style Providers fill:#161b22,stroke:#30363d,color:#e6edf3
     style Storage fill:#161b22,stroke:#30363d,color:#e6edf3
     style Frontend fill:#161b22,stroke:#30363d,color:#e6edf3
@@ -173,7 +173,7 @@ docker compose up --build -d
 # 4. Run database migrations
 docker compose exec backend npx prisma migrate dev
 
-# 5. Open FlowOps
+# 5. Open FlowOps HQ
 # Frontend:  http://localhost:5173
 # Backend:   http://localhost:5000
 # API Docs:  http://localhost:5000/api/v1
@@ -209,13 +209,13 @@ npm run dev:local
 ### Test the Gateway
 
 ```bash
-# Send a test prompt through FlowOps
+# Send a test prompt through FlowOps HQ
 curl -X POST http://localhost:5000/v1/chat/completions \
   -H "Authorization: Bearer mock-key" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gemini-1.5-flash",
-    "messages": [{"role": "user", "content": "Hello, FlowOps!"}]
+    "messages": [{"role": "user", "content": "Hello, FlowOps HQ!"}]
   }'
 ```
 
@@ -243,7 +243,7 @@ Redis-powered similarity-based caching. If a prompt is semantically identical to
 Sliding window rate limiter that enforces TPM budgets per subscription tier (FREE / PRO / MAX). Prevents cost overruns and protects upstream providers.
 
 ### 🔄 Smart Retry + Fallback
-If the primary provider fails, FlowOps automatically retries with exponential backoff and falls back to the next provider in the chain. Weighted load balancing distributes traffic optimally.
+If the primary provider fails, FlowOps HQ automatically retries with exponential backoff and falls back to the next provider in the chain. Weighted load balancing distributes traffic optimally.
 
 ### 📊 Real-Time Analytics Dashboard
 Six analytics subtabs: Overview, Token Usage, Latency (P50/P95/P99), Error Analysis, Cost Tracking, and Cache Performance. All powered by PostgreSQL aggregation and Recharts.
@@ -251,8 +251,8 @@ Six analytics subtabs: Overview, Token Usage, Latency (P50/P95/P99), Error Analy
 ### 🔐 API Key Management
 Generate, name, rotate, and revoke API keys with a single click. Keys are SHA-256 hashed at rest. Only the first 8 characters are stored for display.
 
-### 🧬 Codex Prompt Optimizer *(Coming Soon)*
-AI-powered prompt compression using OpenAI Codex. Automatically rewrites verbose prompts to be concise while preserving intent — reducing token costs by up to 40%.
+### 🧬 Codex Prompt Optimizer
+AI-powered prompt compression using OpenAI GPT-4o-mini. Automatically rewrites verbose prompts to be concise while preserving intent — reducing token costs by up to 40%. Results are cached in Redis for 24 hours. Enabled by default on all gateway requests, controllable via the `x-flowops-optimize` header.
 
 ---
 
@@ -266,7 +266,7 @@ AI-powered prompt compression using OpenAI Codex. Automatically rewrites verbose
 - [x] API key management & rotation
 - [x] Async observability logging (BullMQ)
 - [x] Docker Compose full-stack deployment
-- [ ] Codex-powered prompt optimizer
+- [x] Codex-powered prompt optimizer
 - [ ] Webhook & Slack alerting
 - [ ] Team collaboration & RBAC
 - [ ] SDK packages (Python, Node.js)
@@ -297,6 +297,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 **Built with ❤️ by [Aaryan Paliwal](https://github.com/aaryan-paliwal)**
 
-⭐ Star this repo if FlowOps helped you ship AI faster!
+⭐ Star this repo if FlowOps HQ helped you ship AI faster!
 
 </div>

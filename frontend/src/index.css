@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hanken Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-neutral-950: #0a0a0a;
+  --color-neutral-900: #171717;
+  --color-neutral-800: #262626;
+  --color-neutral-700: #404040;
+  --color-neutral-600: #525252;
+  --color-neutral-500: #777777; /* Neutral from Design System */
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-50: #fafafa;
+
+  --color-primary-500: #000000;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+}
+
+@layer base {
+  body {
+    @apply bg-[#030000] text-white font-sans antialiased;
+    background-image: 
+      radial-gradient(ellipse at right top, rgba(220, 38, 38, 0.15) 0%, transparent 60%),
+      radial-gradient(circle at 2px 2px, #1a1a1a 1px, transparent 0);
+    background-size: 100% 100%, 40px 40px;
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: transparent !important;
+    background: linear-gradient(to right, #ffffff, #9ca3af) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+  }
+
+  input, select, textarea {
+    @apply rounded;
+  }
+
+  button {
+    @apply rounded;
+  }
+}
+
+@layer utilities {
+  .glass-nav {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .card-premium {
+    @apply rounded-2xl transition-all duration-300;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.37),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .card-premium:hover {
+    border-color: rgba(6, 182, 212, 0.25);
+    border-top-color: rgba(6, 182, 212, 0.35);
+    border-left-color: rgba(6, 182, 212, 0.30);
+    box-shadow: 
+      0 12px 40px 0 rgba(0, 0, 0, 0.45),
+      0 0 25px 0 rgba(6, 182, 212, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 80px -20px rgba(59, 130, 246, 0.3);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 80px -20px rgba(239, 68, 68, 0.3);
+  }
+
+  .hero-gradient {
+    background: radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 40%, rgba(239, 68, 68, 0.08) 0%, transparent 40%);
+  }
+
+  .code-window {
+    background: #0d0d0d;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+  }
+
+  /* Panning Dot Grid background pattern */
+  .animate-grid-panning {
+    animation: gridMove 24s linear infinite;
+  }
+
+  /* Rotating Shifting Background Glow */
+  .animate-glow-shift {
+    animation: glowRotate 20s ease-in-out infinite;
+  }
+
+  /* Continuously shifting text gradients */
+  .animate-text-shimmer {
+    background-size: 200% auto;
+    animation: textShimmer 6s ease-in-out infinite;
+  }
+}
+
+@keyframes gridMove {
+  0% {
+    background-position: 0px 0px;
+  }
+  100% {
+    background-position: 24px 24px;
+  }
+}
+
+@keyframes glowRotate {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translate(-45%, -52%) rotate(120deg) scale(1.08);
+    opacity: 1;
+  }
+  66% {
+    transform: translate(-52%, -48%) rotate(240deg) scale(0.95);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes textShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+

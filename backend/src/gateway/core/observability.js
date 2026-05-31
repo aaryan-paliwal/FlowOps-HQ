@@ -1,4 +1,4 @@
-const { prisma } = require('../../config/database');
+const { db, requestLogs } = require('../../config/database');
 const logger = require('../../utils/logger');
 const { checkAndTriggerAlerts } = require('./alerts');
 
@@ -22,41 +22,50 @@ function logRequestAsync(logParams) {
         completionTokens = 0,
         cacheHit = false,
         provider = null,
-        model = null
+        model = null,
+        promptOptimized = false,
+        originalPromptTokens = 0,
+        tokensSaved = 0,
+        optimizationPercent = 0
     } = logParams;
 
-    // Fire-and-forget: execute Prisma insert asynchronously in the Node event loop.
-    // By not using 'await' here, the HTTP response goes back to the client immediately.
-    prisma.requestLog.create({
-        data: {
-            apiId,
-            endpoint,
-            method,
-            statusCode,
-            latencyMs,
-            ip,
-            apiKeyId,
-            requestId,
-            promptTokens,
-            completionTokens,
-            tokensUsed: promptTokens + completionTokens,
-            cacheHit,
-            provider,
-            model,
-            timestamp: new Date()
-        }
-    }).then((createdLog) => {
-        logger.info('Observability: Log persisted to DB', { logId: createdLog.id, cacheHit });
-        
-        // Execute dynamic thresholds and budget checks asynchronously
-        checkAndTriggerAlerts(apiId);
-    }).catch((err) => {
-        logger.error('Observability: Failed to write request log to DB', {
-            error: err.message,
-            requestId,
-            apiId
-        });
-    });
+    const logEntry = {
+        apiId, endpoint, method, statusCode, latencyMs, ip, apiKeyId, requestId,
+        promptTokens, completionTokens, tokensUsed: promptTokens + completionTokens,
+        cacheHit, provider, model, promptOptimized, originalPromptTokens,
+        tokensSaved, optimizationPercent, timestamp: new Date()
+    };
+    
+    batchQueue.push(logEntry);
+    
+    // We trigger alerts synchronously or fire-and-forget them here
+    checkAndTriggerAlerts(apiId).catch(err => logger.error('Alerts Error', { error: err.message }));
 }
+
+// ─── Batch Processor Queue ───
+const batchQueue = [];
+const BATCH_SIZE = 50;
+const FLUSH_INTERVAL_MS = 5000;
+
+async function processBatch() {
+    if (batchQueue.length === 0) return;
+    
+    // Take up to BATCH_SIZE items from the queue
+    const batch = batchQueue.splice(0, BATCH_SIZE);
+    
+    try {
+        await db.insert(requestLogs).values(batch);
+        logger.info(`Observability: Batched ${batch.length} logs to DB`);
+    } catch (err) {
+        logger.error('Observability: Failed to batch write request logs to DB', {
+            error: err.message
+        });
+        // On failure, re-queue the items
+        batchQueue.unshift(...batch);
+    }
+}
+
+// Start the background batch flusher
+setInterval(processBatch, FLUSH_INTERVAL_MS);
 
 module.exports = { logRequestAsync };

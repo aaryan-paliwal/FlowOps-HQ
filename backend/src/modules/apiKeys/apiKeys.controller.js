@@ -1,37 +1,50 @@
-const { prisma } = require('../../config/database');
+const { eq, and, inArray, desc } = require('drizzle-orm');
+const { db, apis, apiKeys } = require('../../config/database');
 const { generateApiKey } = require('../../utils/generateApiKey');
 const response = require('../../utils/formatResponse');
 
 async function listKeys(req, res, next) {
     try {
         const { apiId } = req.query;
-        const where = {};
+        let targetApiIds;
 
         if (apiId) {
             // Verify user owns this API
-            const api = await prisma.api.findFirst({ where: { id: apiId, userId: req.user.userId } });
+            const [api] = await db.select({ id: apis.id }).from(apis)
+                .where(and(eq(apis.id, apiId), eq(apis.userId, req.user.userId)))
+                .limit(1);
             if (!api) return response.error(res, 'API not found', 404);
-            where.apiId = apiId;
+            targetApiIds = [apiId];
         } else {
             // Get all keys for user's APIs
-            const userApis = await prisma.api.findMany({
-                where: { userId: req.user.userId },
-                select: { id: true },
-            });
-            where.apiId = { in: userApis.map((a) => a.id) };
+            const userApis = await db.select({ id: apis.id }).from(apis)
+                .where(eq(apis.userId, req.user.userId));
+            targetApiIds = userApis.map((a) => a.id);
         }
 
-        const keys = await prisma.apiKey.findMany({
-            where,
-            select: {
-                id: true, apiId: true, name: true, keyPrefix: true,
-                revoked: true, createdAt: true,
-                api: { select: { name: true, slug: true } },
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+        if (targetApiIds.length === 0) {
+            return response.success(res, { keys: [] });
+        }
 
-        return response.success(res, { keys });
+        const keys = await db.select({
+            id: apiKeys.id,
+            apiId: apiKeys.apiId,
+            name: apiKeys.name,
+            keyPrefix: apiKeys.keyPrefix,
+            revoked: apiKeys.revoked,
+            createdAt: apiKeys.createdAt,
+        }).from(apiKeys)
+            .where(inArray(apiKeys.apiId, targetApiIds))
+            .orderBy(desc(apiKeys.createdAt));
+
+        // Enrich with api info
+        const enrichedKeys = await Promise.all(keys.map(async (key) => {
+            const [api] = await db.select({ name: apis.name, slug: apis.slug }).from(apis)
+                .where(eq(apis.id, key.apiId)).limit(1);
+            return { ...key, api: api || null };
+        }));
+
+        return response.success(res, { keys: enrichedKeys });
     } catch (err) { next(err); }
 }
 
@@ -40,14 +53,19 @@ async function createKey(req, res, next) {
         const { apiId, name } = req.body;
 
         // Verify ownership
-        const api = await prisma.api.findFirst({ where: { id: apiId, userId: req.user.userId } });
+        const [api] = await db.select({ id: apis.id }).from(apis)
+            .where(and(eq(apis.id, apiId), eq(apis.userId, req.user.userId)))
+            .limit(1);
         if (!api) return response.error(res, 'API not found', 404);
 
         const { rawKey, keyHash, keyPrefix } = generateApiKey();
 
-        const key = await prisma.apiKey.create({
-            data: { apiId, name, keyHash, keyPrefix },
-            select: { id: true, apiId: true, name: true, keyPrefix: true, createdAt: true },
+        const [key] = await db.insert(apiKeys).values({ apiId, name, keyHash, keyPrefix }).returning({
+            id: apiKeys.id,
+            apiId: apiKeys.apiId,
+            name: apiKeys.name,
+            keyPrefix: apiKeys.keyPrefix,
+            createdAt: apiKeys.createdAt,
         });
 
         // Raw key is returned ONCE — will never be shown again
@@ -58,19 +76,23 @@ async function createKey(req, res, next) {
 async function revokeKey(req, res, next) {
     try {
         // Find key and verify ownership through API
-        const key = await prisma.apiKey.findUnique({
-            where: { id: req.params.id },
-            include: { api: { select: { userId: true } } },
-        });
+        const [key] = await db.select({
+            id: apiKeys.id,
+            apiId: apiKeys.apiId,
+        }).from(apiKeys).where(eq(apiKeys.id, req.params.id)).limit(1);
 
-        if (!key || key.api.userId !== req.user.userId) {
+        if (!key) return response.error(res, 'API key not found', 404);
+
+        const [api] = await db.select({ userId: apis.userId }).from(apis)
+            .where(eq(apis.id, key.apiId)).limit(1);
+
+        if (!api || api.userId !== req.user.userId) {
             return response.error(res, 'API key not found', 404);
         }
 
-        await prisma.apiKey.update({
-            where: { id: req.params.id },
-            data: { revoked: true },
-        });
+        await db.update(apiKeys)
+            .set({ revoked: true })
+            .where(eq(apiKeys.id, req.params.id));
 
         return response.success(res, { message: 'API key revoked' });
     } catch (err) { next(err); }

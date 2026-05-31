@@ -1,12 +1,12 @@
 const app = require('./app');
 const { env } = require('./config/env');
-const { prisma } = require('./config/database');
+const { sql } = require('./config/database');
 const { redis } = require('./config/redis');
 const logger = require('./utils/logger');
 
 // ─── Start Server ───
 const server = app.listen(env.PORT, () => {
-    logger.info(`FlowOps Backend running on port ${env.PORT}`, {
+    logger.info(`FlowOps HQ Backend running on port ${env.PORT}`, {
         env: env.NODE_ENV,
         port: env.PORT,
     });
@@ -20,7 +20,7 @@ async function gracefulShutdown(signal) {
         logger.info('HTTP server closed');
 
         try {
-            await prisma.$disconnect();
+            await sql.end();
             logger.info('PostgreSQL disconnected');
         } catch (err) {
             logger.error('Error disconnecting PostgreSQL', { error: err.message });

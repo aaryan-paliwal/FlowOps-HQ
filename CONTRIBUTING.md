@@ -1,6 +1,6 @@
-# Contributing to FlowOps
+# Contributing to FlowOps HQ
 
-Thank you for your interest in contributing to **FlowOps — The AI Control Plane**! We welcome contributions of all kinds: bug fixes, new features, documentation improvements, and more.
+Thank you for your interest in contributing to **FlowOps HQ — The AI Control Plane**! We welcome contributions of all kinds: bug fixes, new features, documentation improvements, and more.
 
 ---
 
@@ -9,9 +9,9 @@ Thank you for your interest in contributing to **FlowOps — The AI Control Plan
 ### 1. Fork & Clone
 
 ```bash
-git fork https://github.com/aaryan-paliwal/flowops-ai-gateway
-git clone https://github.com/<your-username>/flowops-ai-gateway.git
-cd flowops-ai-gateway
+git fork https://github.com/aaryan-paliwal/FlowOps-HQ
+git clone https://github.com/<your-username>/FlowOps-HQ.git
+cd FlowOps-HQ
 ```
 
 ### 2. Install Dependencies
@@ -151,12 +151,12 @@ Be respectful, inclusive, and constructive. We follow the [Contributor Covenant]
 
 ## 📄 License
 
-By contributing to FlowOps, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+By contributing to FlowOps HQ, you agree that your contributions will be licensed under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
 
-**Thank you for helping make FlowOps better! ⚡**
+**Thank you for helping make FlowOps HQ better! ⚡**
 
 </div>

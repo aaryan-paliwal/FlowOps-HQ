@@ -1,12 +1,17 @@
-const { prisma } = require('../../config/database');
+const { eq } = require('drizzle-orm');
+const { db, users } = require('../../config/database');
 const response = require('../../utils/formatResponse');
 
 async function getProfile(req, res, next) {
     try {
-        const user = await prisma.user.findUnique({
-            where: { id: req.user.userId },
-            select: { id: true, email: true, name: true, createdAt: true, updatedAt: true },
-        });
+        const [user] = await db.select({
+            id: users.id,
+            email: users.email,
+            name: users.name,
+            createdAt: users.createdAt,
+            updatedAt: users.updatedAt,
+        }).from(users).where(eq(users.id, req.user.userId)).limit(1);
+
         if (!user) return response.error(res, 'User not found', 404);
         return response.success(res, { user });
     } catch (err) { next(err); }
@@ -14,11 +19,17 @@ async function getProfile(req, res, next) {
 
 async function updateProfile(req, res, next) {
     try {
-        const user = await prisma.user.update({
-            where: { id: req.user.userId },
-            data: { name: req.body.name, email: req.body.email },
-            select: { id: true, email: true, name: true, createdAt: true, updatedAt: true },
-        });
+        const [user] = await db.update(users)
+            .set({ name: req.body.name, email: req.body.email, updatedAt: new Date() })
+            .where(eq(users.id, req.user.userId))
+            .returning({
+                id: users.id,
+                email: users.email,
+                name: users.name,
+                createdAt: users.createdAt,
+                updatedAt: users.updatedAt,
+            });
+
         return response.success(res, { user });
     } catch (err) { next(err); }
 }

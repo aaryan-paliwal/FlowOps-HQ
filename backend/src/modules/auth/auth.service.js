@@ -1,13 +1,14 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { prisma } = require('../../config/database');
+const { eq } = require('drizzle-orm');
+const { db, users } = require('../../config/database');
 const { env } = require('../../config/env');
 
 const SALT_ROUNDS = 12;
 
 async function register({ email, password, name }) {
     // Check if user already exists
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existing) {
         const error = new Error('Email already registered');
         error.statusCode = 409;
@@ -16,9 +17,11 @@ async function register({ email, password, name }) {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    const user = await prisma.user.create({
-        data: { email, passwordHash, name },
-        select: { id: true, email: true, name: true, createdAt: true },
+    const [user] = await db.insert(users).values({ email, passwordHash, name }).returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        createdAt: users.createdAt,
     });
 
     const token = generateToken(user);
@@ -26,7 +29,7 @@ async function register({ email, password, name }) {
 }
 
 async function login({ email, password }) {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (!user) {
         const error = new Error('Invalid credentials');
         error.statusCode = 401;
