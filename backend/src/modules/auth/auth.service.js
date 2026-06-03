@@ -17,10 +17,11 @@ async function register({ email, password, name }) {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    const [user] = await db.insert(users).values({ email, passwordHash, name }).returning({
+    const [user] = await db.insert(users).values({ email, passwordHash, name, subscriptionTier: 'MAX' }).returning({
         id: users.id,
         email: users.email,
         name: users.name,
+        subscriptionTier: users.subscriptionTier,
         createdAt: users.createdAt,
     });
 
@@ -45,7 +46,13 @@ async function login({ email, password }) {
 
     const token = generateToken(user);
     return {
-        user: { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt },
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            subscriptionTier: user.subscriptionTier,
+            createdAt: user.createdAt
+        },
         token,
     };
 }

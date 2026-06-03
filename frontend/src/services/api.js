@@ -97,12 +97,6 @@ export const authService = {
     updateProfile: (data) => api.put('/users/me', data)
 };
 
-export const gatewayService = {
-    getRoutes: () => api.get('/gateway/routes'),
-    createRoute: (routeConfig) => api.post('/gateway/routes', routeConfig),
-    getTrafficStats: () => api.get('/analytics/traffic')
-};
-
 export const analyticsService = {
     getOverview: (params) => api.get('/analytics/overview', { params }),
     getTraffic: (params) => api.get('/analytics/traffic', { params }),

@@ -6,7 +6,7 @@ const response = require('../../utils/formatResponse');
 function buildConditions(apiIds, apiId, from, to) {
     const conditions = [];
     if (apiId) {
-        conditions.push(eq(requestLogs.apiId, apiId));
+        conditions.push(and(eq(requestLogs.apiId, apiId), inArray(requestLogs.apiId, apiIds)));
     } else {
         conditions.push(inArray(requestLogs.apiId, apiIds));
     }
@@ -20,8 +20,9 @@ function buildConditions(apiIds, apiId, from, to) {
  */
 async function getOverview(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
 
         if (apiIds.length === 0) {
@@ -40,7 +41,7 @@ async function getOverview(req, res, next) {
         }).from(requestLogs).where(whereClause);
 
         const [activeResult] = await db.select({ count: count() }).from(apis)
-            .where(and(eq(apis.userId, req.user.userId), eq(apis.isActive, true)));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug), eq(apis.isActive, true)));
 
         const [tokenResult] = await db.select({
             totalTokens: sum(requestLogs.tokensUsed),
@@ -94,8 +95,9 @@ async function getOverview(req, res, next) {
  */
 async function getTraffic(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
 
         if (apiIds.length === 0) {
@@ -105,7 +107,7 @@ async function getTraffic(req, res, next) {
         const { apiId, from, to } = req.query;
         const fromDate = from ? new Date(from) : new Date(Date.now() - 24 * 60 * 60 * 1000);
         const toDate = to ? new Date(to) : new Date();
-        const targetApiIds = apiId ? [apiId] : apiIds;
+        const targetApiIds = apiId ? (apiIds.includes(apiId) ? [apiId] : []) : apiIds;
 
         const logs = await db.select({
             timestamp: requestLogs.timestamp,
@@ -161,9 +163,14 @@ async function getTraffic(req, res, next) {
  */
 async function getEndpoints(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
+
+        if (apiIds.length === 0) {
+            return response.success(res, { endpoints: [] });
+        }
 
         const { apiId, from, to } = req.query;
         const whereClause = buildConditions(apiIds, apiId, from, to);
@@ -195,9 +202,14 @@ async function getEndpoints(req, res, next) {
  */
 async function getErrors(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
+
+        if (apiIds.length === 0) {
+            return response.success(res, { errorDistribution: [] });
+        }
 
         const { apiId, from, to } = req.query;
         const whereClause = buildConditions(apiIds, apiId, from, to);
@@ -224,8 +236,9 @@ async function getErrors(req, res, next) {
  */
 async function getLlmMetrics(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
 
         if (apiIds.length === 0) {
@@ -271,8 +284,9 @@ async function getLlmMetrics(req, res, next) {
  */
 async function getCacheMetrics(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
 
         if (apiIds.length === 0) {
@@ -358,8 +372,9 @@ async function getCacheMetrics(req, res, next) {
  */
 async function getUserMetrics(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
 
         if (apiIds.length === 0) {
@@ -408,8 +423,9 @@ async function getUserMetrics(req, res, next) {
  */
 async function getFeedbackMetrics(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
 
         if (apiIds.length === 0) {
@@ -489,8 +505,9 @@ async function getFeedbackMetrics(req, res, next) {
  */
 async function getSummaryMetrics(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         const userApis = await db.select({ id: apis.id }).from(apis)
-            .where(eq(apis.userId, req.user.userId));
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
         const apiIds = userApis.map((a) => a.id);
 
         if (apiIds.length === 0) {

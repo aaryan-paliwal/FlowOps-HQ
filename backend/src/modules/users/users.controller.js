@@ -8,6 +8,7 @@ async function getProfile(req, res, next) {
             id: users.id,
             email: users.email,
             name: users.name,
+            subscriptionTier: users.subscriptionTier,
             createdAt: users.createdAt,
             updatedAt: users.updatedAt,
         }).from(users).where(eq(users.id, req.user.userId)).limit(1);
@@ -26,6 +27,7 @@ async function updateProfile(req, res, next) {
                 id: users.id,
                 email: users.email,
                 name: users.name,
+                subscriptionTier: users.subscriptionTier,
                 createdAt: users.createdAt,
                 updatedAt: users.updatedAt,
             });

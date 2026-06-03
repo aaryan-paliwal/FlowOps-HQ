@@ -117,7 +117,7 @@ export default function AIGatewaysPage() {
                                         <h3 className="text-[14px] font-bold text-white font-sans truncate">{api.name}</h3>
                                     </div>
                                     <p className="text-[12px] font-mono text-neutral-400 truncate">
-                                        Slug Context: <span className="text-cyan-400">/gateway/{api.slug}</span>
+                                        Gateway Endpoint: <span className="text-cyan-400">/gateway/v1/chat/completions</span>
                                     </p>
                                     <p className="text-[11px] font-sans text-neutral-550 truncate">
                                         Target Upstream: {api.baseUrl}

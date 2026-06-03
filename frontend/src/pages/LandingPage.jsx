@@ -45,7 +45,7 @@ const response = await client.chat.completions.create({
     content: "Analyze traffic"
   }]
 });`,
-        curl: `curl -X POST https://api.flowops.dev/v1/chat/completions \\
+        curl: `curl -X POST https://api.flowops.dev/gateway/v1/chat/completions \\
   -H "Authorization: Bearer fo_live_9a2...x3" \\
   -H "Content-Type: application/json" \\
   -d '{

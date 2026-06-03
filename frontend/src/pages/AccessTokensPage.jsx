@@ -329,7 +329,7 @@ export default function AccessTokensPage() {
                                     >
                                         <option value="" className="bg-[#111111]">-- Choose Configuration Context --</option>
                                         {apisList.map((api) => (
-                                            <option key={api.id} value={api.id} className="bg-[#111111]">{api.name} (/gateway/{api.slug})</option>
+                                            <option key={api.id} value={api.id} className="bg-[#111111]">{api.name} (/gateway/v1/chat/completions)</option>
                                         ))}
                                     </select>
                                     {apisList.length === 0 && !apisLoading && (
@@ -402,8 +402,9 @@ export default function AccessTokensPage() {
                                         Example cURL program usage:
                                     </div>
                                     <pre className="bg-black border border-white/5 rounded p-3 overflow-x-auto font-mono text-[10px] text-neutral-350 leading-relaxed">
-{`curl -X POST http://localhost:5000/gateway/${generatedKeyDetails.key.keyPrefix} \\
+{`curl -X POST http://localhost:5000/gateway/v1/chat/completions \\
   -H "x-flowops-api-key: ${generatedKeyDetails.rawKey}" \\
+  -H "x-flowops-optimize: true" \\
   -H "Content-Type: application/json" \\
   -d '{
     "model": "gpt-4o-mini",

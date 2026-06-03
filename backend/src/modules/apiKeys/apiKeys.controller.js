@@ -6,19 +6,24 @@ const response = require('../../utils/formatResponse');
 async function listKeys(req, res, next) {
     try {
         const { apiId } = req.query;
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         let targetApiIds;
 
         if (apiId) {
             // Verify user owns this API
             const [api] = await db.select({ id: apis.id }).from(apis)
-                .where(and(eq(apis.id, apiId), eq(apis.userId, req.user.userId)))
+                .where(and(
+                    eq(apis.id, apiId),
+                    eq(apis.userId, req.user.userId),
+                    eq(apis.workspaceSlug, workspaceSlug)
+                ))
                 .limit(1);
             if (!api) return response.error(res, 'API not found', 404);
             targetApiIds = [apiId];
         } else {
-            // Get all keys for user's APIs
+            // Get keys for the active workspace only.
             const userApis = await db.select({ id: apis.id }).from(apis)
-                .where(eq(apis.userId, req.user.userId));
+                .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
             targetApiIds = userApis.map((a) => a.id);
         }
 
@@ -51,10 +56,15 @@ async function listKeys(req, res, next) {
 async function createKey(req, res, next) {
     try {
         const { apiId, name } = req.body;
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
 
         // Verify ownership
         const [api] = await db.select({ id: apis.id }).from(apis)
-            .where(and(eq(apis.id, apiId), eq(apis.userId, req.user.userId)))
+            .where(and(
+                eq(apis.id, apiId),
+                eq(apis.userId, req.user.userId),
+                eq(apis.workspaceSlug, workspaceSlug)
+            ))
             .limit(1);
         if (!api) return response.error(res, 'API not found', 404);
 
@@ -75,6 +85,7 @@ async function createKey(req, res, next) {
 
 async function revokeKey(req, res, next) {
     try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
         // Find key and verify ownership through API
         const [key] = await db.select({
             id: apiKeys.id,
@@ -83,10 +94,10 @@ async function revokeKey(req, res, next) {
 
         if (!key) return response.error(res, 'API key not found', 404);
 
-        const [api] = await db.select({ userId: apis.userId }).from(apis)
+        const [api] = await db.select({ userId: apis.userId, workspaceSlug: apis.workspaceSlug }).from(apis)
             .where(eq(apis.id, key.apiId)).limit(1);
 
-        if (!api || api.userId !== req.user.userId) {
+        if (!api || api.userId !== req.user.userId || api.workspaceSlug !== workspaceSlug) {
             return response.error(res, 'API key not found', 404);
         }
 

@@ -16,7 +16,25 @@ app.use(cors({
     origin: env.CORS_ORIGIN,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Request-Id'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'x-api-key',
+        'X-Request-Id',
+        'X-Workspace-Slug',
+        'x-flowops-api-key',
+        'x-flowops-optimize',
+        'x-flowops-cache',
+        'x-flowops-fallbacks',
+        'x-flowops-retries',
+        'x-flowops-simulate-error'
+    ],
+    exposedHeaders: [
+        'x-flowops-optimized',
+        'x-flowops-tokens-saved',
+        'x-flowops-optimization-percent',
+        'X-Request-Id'
+    ],
 }));
 
 // ─── Body Parsing with Size Limit ───

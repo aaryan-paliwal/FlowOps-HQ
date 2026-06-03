@@ -55,7 +55,12 @@ export default function RegisterPage() {
         onSuccess: (data) => {
             if (data.success && data.data?.token) {
                 sessionStorage.setItem('just_registered', 'true');
-                setAuth(data.data.token, data.data.user);
+                setAuth(data.data.token, {
+                    ...data.data.user,
+                    company: company || "FlowOps HQ",
+                    subscriptionTier: data.data.user.subscriptionTier || "FREE",
+                    location: location || "US"
+                });
                 toast.success('Workspace initialized successfully! Welcome to FlowOps HQ.');
                 navigate('/onboarding');
             } else {
@@ -79,19 +84,23 @@ export default function RegisterPage() {
             return toast.error('You must agree to the Terms of Service & Privacy Policy.');
         }
         
-        // Mock save for hackathon
-        sessionStorage.setItem('just_registered', 'true');
-        setAuth('mock_token_123', {
-            id: "user_fop_1x9k2m",
-            name: name,
-            email: email,
-            role: "admin",
-            company: company || "FlowOps HQ",
-            subscriptionTier: "PRO",
-            location: location || "US"
-        });
-        toast.success('Workspace initialized successfully! Welcome to FlowOps HQ.');
-        navigate('/onboarding');
+        if (import.meta.env.VITE_ENABLE_MOCK_AUTH === 'true') {
+            sessionStorage.setItem('just_registered', 'true');
+            setAuth('mock_token_123', {
+                id: "user_fop_1x9k2m",
+                name,
+                email,
+                role: "admin",
+                company: company || "FlowOps HQ",
+                subscriptionTier: "PRO",
+                location: location || "US"
+            });
+            toast.success('Workspace initialized successfully! Welcome to FlowOps HQ.');
+            navigate('/onboarding');
+            return;
+        }
+
+        registerMutation.mutate({ name, email, password });
     };
 
     return (

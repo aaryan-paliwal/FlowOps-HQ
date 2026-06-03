@@ -40,19 +40,23 @@ export default function LoginPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!email || !password) return toast.error('All fields are required.');
-        
-        // Hackathon mock bypass: immediately log the user in with a dummy token
-        setAuth('mock_token_123', {
-            id: "user_fop_1x9k2m",
-            name: "FlowOps HQ Developer",
-            email: email,
-            role: "admin",
-            company: "FlowOps HQ",
-            subscriptionTier: "PRO",
-            location: "US"
-        });
-        toast.success('Welcome back to FlowOps HQ!');
-        navigate('/dashboard');
+
+        if (import.meta.env.VITE_ENABLE_MOCK_AUTH === 'true') {
+            setAuth('mock_token_123', {
+                id: "user_fop_1x9k2m",
+                name: "FlowOps HQ Developer",
+                email,
+                role: "admin",
+                company: "FlowOps HQ",
+                subscriptionTier: "PRO",
+                location: "US"
+            });
+            toast.success('Welcome back to FlowOps HQ!');
+            navigate('/dashboard');
+            return;
+        }
+
+        loginMutation.mutate({ email, password });
     };
 
     return (

@@ -53,7 +53,7 @@ export default function DashboardPage() {
     // Step states
     const [selectedProvider, setSelectedProvider] = useState('Select new AI provider to integrate');
     const [integrationLang, setIntegrationLang] = useState('NodeJS');
-    const [selectedModel, setSelectedModel] = useState('gpt-4o');
+    const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
 
     // Quick Integration States
     const [isIntegrateOpen, setIsIntegrateOpen] = useState(false);
@@ -426,7 +426,7 @@ response = client.chat.completions.create(
                                 <div className="p-4 rounded-lg bg-white/2 border border-white/5 space-y-2.5">
                                     <div className="flex justify-between items-center">
                                         <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Gateway Context Route</span>
-                                        <span className="font-mono text-cyan-400">/gateway/{integratingProvider.toLowerCase().replace(/\s+/g, '-')}</span>
+                                        <span className="font-mono text-cyan-400">/gateway/v1/chat/completions</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Target Upstream URL</span>
