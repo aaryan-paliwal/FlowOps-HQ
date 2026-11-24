@@ -34,53 +34,11 @@ api.interceptors.request.use(
 // Response Interceptor: Global Error Handling
 api.interceptors.response.use(
     (response) => {
-        return response.data; // Immediately return the data payload
+        return response.data;
     },
     (error) => {
-        const mockFallbackEnabled = import.meta.env.VITE_ENABLE_MOCK_FALLBACK === 'true';
-        if (!mockFallbackEnabled) {
-            if (error.response) {
-                if (error.response.status === 401) {
-                    console.error("Authentication expired or invalid. Please sign in again.");
-                    localStorage.removeItem('flowops_access_token');
-                }
-                return Promise.reject(error.response.data);
-            }
-            return Promise.reject(error);
-        }
-
-        // Demo fallback data, enabled only through VITE_ENABLE_MOCK_FALLBACK=true.
-        const url = error.config?.url;
-        
-        if (url === '/keys') {
-            return Promise.resolve({ data: { keys: [{ id: 'key_1', name: 'Production Main', keyPrefix: 'sk_live_mock_key_prefix_only', revoked: false, createdAt: new Date() }] } });
-        }
-        
-        if (url === '/apis') {
-            return Promise.resolve({ data: { apis: [
-                { id: 'api_1', name: 'OpenAI GPT-4 Gateway', provider: 'openai', status: 'active', requests: 12450 },
-                { id: 'api_2', name: 'Anthropic Claude-3', provider: 'anthropic', status: 'active', requests: 8320 }
-            ] } });
-        }
-
-        if (url === '/analytics/overview') {
-            return Promise.resolve({ data: { totalRequests: 1245000, totalCost: 432.50, averageLatency: 45, errorRate: 0.12 } });
-        }
-
-        if (url && url.includes('/analytics/')) {
-            const chartData = [
-                { time: "12:00", value: 120 }, { time: "02:00", value: 250 }, { time: "04:00", value: 410 },
-                { time: "06:00", value: 380 }, { time: "08:00", value: 890 }, { time: "10:00", value: 1100 },
-                { time: "12:00", value: 1450 }, { time: "02:00", value: 1300 }, { time: "04:00", value: 1800 },
-                { time: "06:00", value: 2100 }, { time: "08:00", value: 2450 }, { time: "10:00", value: 2800 },
-                { time: "12:00", value: 3100 }
-            ];
-            return Promise.resolve({ data: chartData });
-        }
-
         if (error.response) {
             if (error.response.status === 401) {
-                console.error("Authentication expired or invalid. Please sign in again.");
                 localStorage.removeItem('flowops_access_token');
             }
             return Promise.reject(error.response.data);
@@ -104,6 +62,8 @@ export const analyticsService = {
     getErrors: (params) => api.get('/analytics/errors', { params }),
     getLlmMetrics: (params) => api.get('/analytics/llm-metrics', { params }),
     getCacheMetrics: (params) => api.get('/analytics/cache', { params }),
+    getCacheEntries: (params) => api.get('/analytics/cache/entries', { params }),
+    clearCache: (params) => api.delete('/analytics/cache', { params }),
     getUserMetrics: (params) => api.get('/analytics/users', { params }),
     getFeedbackMetrics: (params) => api.get('/analytics/feedback', { params }),
     getSummaryMetrics: (params) => api.get('/analytics/summary', { params })
@@ -116,6 +76,8 @@ export const logsService = {
 export const apisService = {
     listApis: () => api.get('/apis'),
     createApi: (data) => api.post('/apis', data),
+    updateApi: (id, data) => api.put(`/apis/${id}`, data),
+    testAlert: (id, data = {}) => api.post(`/apis/${id}/test-alert`, data),
     deleteApi: (id) => api.delete(`/apis/${id}`)
 };
 

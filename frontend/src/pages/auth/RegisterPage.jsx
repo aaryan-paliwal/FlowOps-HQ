@@ -19,7 +19,7 @@ export default function RegisterPage() {
     const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [agreeTerms, setAgreeTerms] = useState(false);
-    
+
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -57,7 +57,7 @@ export default function RegisterPage() {
                 sessionStorage.setItem('just_registered', 'true');
                 setAuth(data.data.token, {
                     ...data.data.user,
-                    company: company || "FlowOps HQ",
+                    company: (company || '').trim() || "My Workspace",
                     subscriptionTier: data.data.user.subscriptionTier || "FREE",
                     location: location || "US"
                 });
@@ -83,22 +83,6 @@ export default function RegisterPage() {
         if (!agreeTerms) {
             return toast.error('You must agree to the Terms of Service & Privacy Policy.');
         }
-        
-        if (import.meta.env.VITE_ENABLE_MOCK_AUTH === 'true') {
-            sessionStorage.setItem('just_registered', 'true');
-            setAuth('mock_token_123', {
-                id: "user_fop_1x9k2m",
-                name,
-                email,
-                role: "admin",
-                company: company || "FlowOps HQ",
-                subscriptionTier: "PRO",
-                location: location || "US"
-            });
-            toast.success('Workspace initialized successfully! Welcome to FlowOps HQ.');
-            navigate('/onboarding');
-            return;
-        }
 
         registerMutation.mutate({ name, email, password });
     };
@@ -114,7 +98,7 @@ export default function RegisterPage() {
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/2 right-[-5%] -translate-y-1/2 w-[1000px] h-[1000px] bg-red-900/15 rounded-full blur-[140px]"></div>
             </div>
-            
+
             <div className="max-w-[380px] w-full flex flex-col items-center pb-24 pt-8 relative z-10">
 
                 {/* Official FlowOps Logo */}
@@ -285,11 +269,10 @@ export default function RegisterPage() {
                                                     setLocation(opt.id);
                                                     setIsLocationDropdownOpen(false);
                                                 }}
-                                                className={`flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-md text-[13px] transition-colors cursor-pointer ${
-                                                    location === opt.id 
-                                                        ? 'bg-white/10 text-white font-bold' 
-                                                        : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                                                }`}
+                                                className={`flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-md text-[13px] transition-colors cursor-pointer ${location === opt.id
+                                                    ? 'bg-white/10 text-white font-bold'
+                                                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                                                    }`}
                                             >
                                                 <span className="text-lg">{opt.flag}</span>
                                                 <div className="flex-1">

@@ -13,7 +13,6 @@
     "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
     "test": "cd backend && npm test",
     "db:push": "cd backend && npm run db:push",
-    "db:seed": "cd backend && node src/seed-db.js",
     "db:studio": "cd backend && npm run db:studio",
     "docker:up": "docker compose up --build -d",
     "docker:down": "docker compose down"

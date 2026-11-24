@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Icon from '../ui/Icon';
 import { Card } from '../ui/Card';
+import { GeneratedKeyView } from '../ui/GeneratedKeyView';
 import { apiKeysService, apisService } from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../state/authStore';
@@ -18,7 +19,7 @@ export default function AccessTokensPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' | 'asc'
 
-    const displayName = user?.name || 'Black Panther';
+    const displayName = user?.name || 'Developer';
     const displayInitial = displayName.charAt(0).toUpperCase();
 
     const formatDate = (dateStr) => {
@@ -67,6 +68,10 @@ export default function AccessTokensPage() {
     const createMutation = useMutation({
         mutationFn: (payload) => apiKeysService.createKey(payload),
         onSuccess: (res) => {
+            if (res?.data?.rawKey) {
+                sessionStorage.setItem('flowops_last_test_key', res.data.rawKey);
+                window.dispatchEvent(new Event('flowops:test-key-updated'));
+            }
             setGeneratedKeyDetails(res.data);
             queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
             toast.success('Access Token generated successfully!');
@@ -237,7 +242,7 @@ export default function AccessTokensPage() {
                                 filteredKeys.map((t) => (
                                     <tr key={t.id} className="hover:bg-white/2 transition-colors">
                                         <td className="px-6 py-5 font-sans font-bold text-white">{t.name}</td>
-                                        <td className="px-6 py-5 font-mono text-neutral-350">
+                                        <td className="px-6 py-5 font-mono text-neutral-300">
                                             <div className="inline-flex items-center gap-2 bg-white/5 px-2.5 py-1 rounded border border-white/5">
                                                 <span>{formatKey(t.keyPrefix)}</span>
                                                 <button 
@@ -301,68 +306,78 @@ export default function AccessTokensPage() {
 
             {/* Create Access Token Dialog Modal */}
             {isCreateOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-[#111111] border border-white/5 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
-                        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className={`bg-[#08060a]/95 border border-[rgba(153,27,27,0.3)] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_25px_rgba(239,68,68,0.12)] backdrop-blur-2xl w-full max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col ${generatedKeyDetails ? 'max-w-2xl' : 'max-w-lg'}`}>
+                        <div className="px-6 py-4 border-b border-[rgba(153,27,27,0.2)] flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded bg-white flex items-center justify-center text-black">
-                                    <Icon name="auto_awesome" className="w-4 h-4 text-black"  />
+                                <div className="w-8 h-8 rounded-lg bg-red-950/40 border border-red-500/30 flex items-center justify-center text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                                    <Icon name={generatedKeyDetails ? 'key' : 'auto_awesome'} className="w-4 h-4 text-red-400"  />
                                 </div>
-                                <h3 className="font-bold text-[16px] text-white font-sans">Generate Gateway Token</h3>
+                                <h3 className="font-bold text-[16px] text-white font-sans">
+                                    {generatedKeyDetails ? 'API Key Generated' : 'Generate Gateway Token'}
+                                </h3>
                             </div>
                             <button 
                                 onClick={handleCloseCreateModal}
-                                className="text-neutral-400 hover:text-white transition-colors rounded p-1 hover:bg-white/5 cursor-pointer animate-in duration-100"
+                                className="text-neutral-400 hover:text-white transition-colors rounded p-1 hover:bg-white/10 cursor-pointer animate-in duration-100"
+                                aria-label="Close modal"
                             >
                                 <Icon name="close" className="w-5 h-5"  />
                             </button>
                         </div>
 
                         {!generatedKeyDetails ? (
-                            <form onSubmit={handleCreateKey} className="p-6 space-y-4">
+                            <form onSubmit={handleCreateKey} className="p-6 space-y-4 overflow-y-auto">
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide font-sans">Select Target API Config Context</label>
+                                    <label className="text-[11px] font-bold text-neutral-300 uppercase tracking-wide font-sans">Select Target API Config Context</label>
                                     <select 
                                         value={selectedApiId}
                                         onChange={(e) => setSelectedApiId(e.target.value)}
-                                        className="w-full bg-[#111111]/45 border border-white/5 rounded px-3 py-2 text-[13px] font-sans font-medium text-white focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/20 cursor-pointer"
+                                        className="w-full bg-[#060507] border border-[rgba(153,27,27,0.3)] rounded-lg px-3 py-2.5 text-[13px] font-sans font-medium text-white focus:outline-none focus:border-red-500/50 cursor-pointer"
                                     >
-                                        <option value="" className="bg-[#111111]">-- Choose Configuration Context --</option>
+                                        <option value="" className="bg-[#08060a]">-- Choose Configuration Context --</option>
                                         {apisList.map((api) => (
-                                            <option key={api.id} value={api.id} className="bg-[#111111]">{api.name} (/gateway/v1/chat/completions)</option>
+                                            <option key={api.id} value={api.id} className="bg-[#08060a]">{api.name} (/v1 · {api.slug})</option>
                                         ))}
                                     </select>
                                     {apisList.length === 0 && !apisLoading && (
-                                        <p className="text-[11px] text-amber-500 font-sans font-semibold flex items-center gap-1 mt-1">
-                                            <Icon name="warning" className="w-3.5 h-3.5"  />
-                                            Please configure a route context on the Managed APIs page first!
+                                        <p className="text-[11.5px] text-cyan-400 font-sans font-semibold flex items-center gap-1 mt-1">
+                                            <Icon name="info" className="w-3.5 h-3.5"  />
+                                            Please configure a route context on the AI Gateways page first!
                                         </p>
                                     )}
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide font-sans">Access Token Name</label>
+                                    <label className="text-[11px] font-bold text-neutral-300 uppercase tracking-wide font-sans">Access Token Name</label>
                                     <input 
                                         type="text"
                                         placeholder="e.g. Production Core WebApp"
                                         value={newKeyName}
                                         onChange={(e) => setNewKeyName(e.target.value)}
-                                        className="w-full bg-[#111111]/45 border border-white/5 rounded px-3 py-2 text-[13px] font-sans font-medium text-white placeholder-neutral-500 focus:outline-none focus:border-white/20 focus:ring-1 focus:ring-white/20"
+                                        className="w-full bg-[#060507] border border-[rgba(153,27,27,0.3)] rounded-lg px-3 py-2.5 text-[13px] font-sans font-medium text-white placeholder-neutral-500 focus:outline-none focus:border-red-500/50"
                                     />
                                 </div>
 
-                                <div className="pt-4 border-t border-white/5 flex items-center justify-end gap-3">
+                                <div className="bg-red-950/20 border border-[rgba(153,27,27,0.35)] rounded-lg px-3.5 py-2.5 flex items-start gap-2.5 text-[12px] font-sans text-neutral-300">
+                                    <Icon name="warning" className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                                    <span>
+                                        For security compliance, your private key will be revealed only once immediately after clicking Generate Token.
+                                    </span>
+                                </div>
+
+                                <div className="pt-4 border-t border-[rgba(153,27,27,0.2)] flex items-center justify-end gap-3">
                                     <button 
                                         type="button"
                                         onClick={handleCloseCreateModal}
-                                        className="px-4 py-2 border border-white/5 rounded bg-white/5 hover:bg-white/10 font-sans font-bold text-[12px] text-white transition-colors cursor-pointer"
+                                        className="px-4 py-2 border border-[rgba(153,27,27,0.3)] rounded-lg bg-red-950/20 hover:bg-red-950/40 font-sans font-bold text-[12px] text-white transition-colors cursor-pointer"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit"
                                         disabled={createMutation.isPending || apisList.length === 0}
-                                        className="px-5 py-2 bg-white text-black hover:bg-neutral-200 rounded font-sans font-bold text-[12px] transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                                        className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] rounded-lg font-sans font-bold text-[12px] transition-all hover:scale-[1.02] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                                     >
                                         {createMutation.isPending && <Icon name="autorenew" className="w-3.5 h-3.5 animate-spin"  />}
                                         Generate Token
@@ -370,59 +385,12 @@ export default function AccessTokensPage() {
                                 </div>
                             </form>
                         ) : (
-                            <div className="p-6 space-y-5">
-                                <div className="bg-amber-950/20 border border-amber-500/20 rounded-lg p-4 flex gap-3 text-amber-400">
-                                    <Icon name="warning" className="w-5 h-5 text-amber-550 shrink-0 mt-0.5"  />
-                                    <div className="space-y-1">
-                                        <h4 className="font-bold text-[12px] font-sans">Secure Key Storage Warning</h4>
-                                        <p className="text-[11px] font-sans leading-relaxed text-amber-300">
-                                            For security compliance, we do not store this private token key in plaintext. **You will not be able to retrieve or view it again after closing this window.** Please copy it immediately to a password manager or your local environment secrets.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide font-sans">Your Raw Gateway Token</label>
-                                    <div className="flex gap-2">
-                                        <div className="flex-1 bg-black rounded border border-white/5 px-4 py-3 flex items-center justify-between text-white font-mono text-[12px]">
-                                            <span className="truncate pr-4">{generatedKeyDetails.rawKey}</span>
-                                            <button 
-                                                onClick={() => handleCopy(generatedKeyDetails.rawKey, 'modal')}
-                                                className="text-neutral-400 hover:text-white transition-colors cursor-pointer shrink-0"
-                                            >
-                                                {copiedKeyId === 'modal' ? <Icon name="check" className="w-4 h-4 text-emerald-500"  /> : <Icon name="content_copy" className="w-4 h-4"  />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5 border-t border-white/5 pt-4 font-sans text-[11px] text-neutral-400">
-                                    <div className="flex items-center gap-1.5 font-semibold text-neutral-350 mb-1">
-                                        <Icon name="terminal" className="w-3.5 h-3.5 text-neutral-500"  />
-                                        Example cURL program usage:
-                                    </div>
-                                    <pre className="bg-black border border-white/5 rounded p-3 overflow-x-auto font-mono text-[10px] text-neutral-350 leading-relaxed">
-{`curl -X POST http://localhost:5000/gateway/v1/chat/completions \\
-  -H "x-flowops-api-key: ${generatedKeyDetails.rawKey}" \\
-  -H "x-flowops-optimize: true" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "model": "gpt-4o-mini",
-    "messages": [{"role": "user", "content": "Hello FlowOps HQ!"}]
-  }'`}
-                                    </pre>
-                                </div>
-
-                                <div className="pt-4 border-t border-white/5 flex justify-end">
-                                    <button 
-                                        type="button"
-                                        onClick={handleCloseCreateModal}
-                                        className="px-5 py-2.5 bg-white text-black hover:bg-neutral-200 rounded font-sans font-bold text-[12px] transition-colors shadow-sm cursor-pointer"
-                                    >
-                                        I Have Safely Stored This Key
-                                    </button>
-                                </div>
-                            </div>
+                            <GeneratedKeyView
+                                rawKey={generatedKeyDetails.rawKey}
+                                keyName={generatedKeyDetails.key?.name || newKeyName}
+                                routeName={apisList.find((api) => api.id === selectedApiId)?.name}
+                                onClose={handleCloseCreateModal}
+                            />
                         )}
                     </div>
                 </div>

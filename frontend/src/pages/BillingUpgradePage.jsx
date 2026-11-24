@@ -18,15 +18,18 @@ export default function BillingUpgradePage() {
 
     const handleCheckout = (e) => {
         e.preventDefault();
-        // For the hackathon demo, if you don't have a real link yet, we show a toast.
-        // Once you create your store, you literally just paste the URL here.
-        const checkoutUrl = 'https://demo.lemonsqueezy.com/checkout/buy/variant_id'; 
-        
+        const checkoutUrl = import.meta.env.VITE_LEMONSQUEEZY_CHECKOUT_URL;
+
+        if (!checkoutUrl) {
+            toast.error('Billing checkout URL is not configured (set VITE_LEMONSQUEEZY_CHECKOUT_URL).');
+            return;
+        }
+
         if (window.LemonSqueezy) {
             window.LemonSqueezy.Url.Open(checkoutUrl);
-            toast.success("Lemon Squeezy Checkout Overlay Triggered! (Test Mode)");
+            toast.success('Opening Lemon Squeezy checkout...');
         } else {
-            toast.error("Billing system loading...");
+            window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
         }
     };
 
@@ -126,7 +129,7 @@ export default function BillingUpgradePage() {
                         <div className="mb-2">
                             <button 
                                 onClick={handleCheckout}
-                                className="w-full bg-white hover:bg-neutral-200 text-black font-bold py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] text-[15px] active:scale-[0.98] cursor-pointer"
+                                className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_25px_rgba(239,68,68,0.45)] hover:shadow-[0_0_30px_rgba(239,68,68,0.6)] text-[15px] active:scale-[0.98] cursor-pointer"
                             >
                                 Upgrade to Pro
                             </button>

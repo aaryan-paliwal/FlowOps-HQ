@@ -1,11 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Icon from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { logsService } from '../services/api';
+import { useOrgStore } from '../state/orgStore';
 import toast from 'react-hot-toast';
 
+const LOG_MODEL_RATES = {
+    'gemini-1.5-flash': 0.075,
+    'gemini-2.5-flash': 0.075,
+    'gemini-3.5-flash': 0.075,
+    'gemini-3.5-flash-lite': 0.05,
+    'gemini-3.8-flash': 0.075,
+    'gpt-4o-mini': 0.15,
+    'gpt-4o': 2.5,
+    'anthropic/claude-3-5-sonnet': 3.0,
+    'claude-3-5-sonnet': 3.0,
+    'llama-3.3-70b-versatile': 0.59,
+    gemini: 0.075,
+    openai: 2.5,
+    anthropic: 3.0,
+};
+
+function computeLogCostUsd(log) {
+    const tokens = log.tokensUsed || (log.promptTokens || 0) + (log.completionTokens || 0);
+    const rate = LOG_MODEL_RATES[log.model] ?? LOG_MODEL_RATES[log.provider] ?? 0.15;
+    return (tokens / 1000000) * rate;
+}
+
 export default function LiveLogsPage() {
+    const { activeOrgId, organisations } = useOrgStore();
+    const activeOrg = organisations.find(o => o.id === activeOrgId) || organisations[0];
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLog, setSelectedLog] = useState(null);
     const [activeTab, setActiveTab] = useState('Logs'); // 'Logs' or 'Traces'
@@ -27,7 +53,7 @@ export default function LiveLogsPage() {
         status: true,
         score: true
     });
-    
+
     // Column Search Query
     const [columnSearchQuery, setColumnSearchQuery] = useState('');
 
@@ -137,9 +163,9 @@ export default function LiveLogsPage() {
         }
         try {
             const dataStr = JSON.stringify(filteredLogs, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
             const exportFileDefaultName = `flowops-logs-${new Date().toISOString()}.json`;
-            
+
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
             linkElement.setAttribute('download', exportFileDefaultName);
@@ -176,7 +202,7 @@ export default function LiveLogsPage() {
         { key: 'score', label: 'Score' }
     ];
 
-    const filteredColumnOptions = columnOptions.filter(col => 
+    const filteredColumnOptions = columnOptions.filter(col =>
         col.label.toLowerCase().includes(columnSearchQuery.toLowerCase())
     );
 
@@ -231,12 +257,12 @@ export default function LiveLogsPage() {
                         Real-time API gateway log ingestion and traces pipeline.
                     </p>
                 </div>
-                
-                <button 
+
+                <button
                     onClick={handleExportLogs}
                     className="bg-[#06B6D4] hover:bg-[#08C1E0] text-neutral-950 font-bold px-4 py-2 text-xs tracking-wide rounded-xl flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-[0.98]"
                 >
-                    <Icon name="download" className="w-3.5 h-3.5"  />
+                    <Icon name="download" className="w-3.5 h-3.5" />
                     <span>Export Logs</span>
                 </button>
             </div>
@@ -246,18 +272,18 @@ export default function LiveLogsPage() {
                 {/* Refresh Trigger + "Switch on Live Logs" Dropdown */}
                 <div className="relative" ref={refreshDropdownRef}>
                     <div className="flex items-center bg-[#111111]/40 border border-white/5 rounded-xl divide-x divide-white/5">
-                        <button 
+                        <button
                             onClick={handleRefresh}
                             className="px-3 py-2 text-emerald-400 hover:bg-white/5 rounded-l-xl transition-all cursor-pointer flex items-center justify-center"
                             title="Refresh Logs"
                         >
-                            <Icon name="refresh" className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}  />
+                            <Icon name="refresh" className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                         </button>
-                        <button 
+                        <button
                             onClick={() => setIsRefreshOpen(!isRefreshOpen)}
                             className="px-2 py-2 text-emerald-400/80 hover:bg-white/5 rounded-r-xl transition-all cursor-pointer flex items-center justify-center"
                         >
-                            <Icon name="expand_more" className="w-3.5 h-3.5"  />
+                            <Icon name="expand_more" className="w-3.5 h-3.5" />
                         </button>
                     </div>
 
@@ -265,7 +291,7 @@ export default function LiveLogsPage() {
                         <div className="absolute left-0 mt-1.5 w-52 bg-[#18181B] border border-white/10 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                             <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/5 transition-all select-none">
                                 <span className="text-xs font-semibold text-neutral-300 font-sans">Switch on Live Logs</span>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setIsLiveLogs(!isLiveLogs);
                                         toast.success(isLiveLogs ? 'Live streaming paused' : 'Live streaming enabled');
@@ -281,29 +307,28 @@ export default function LiveLogsPage() {
 
                 {/* Wide Search Input */}
                 <div className="relative flex-1 w-full">
-                    <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500"  />
-                    <input 
-                        type="text" 
+                    <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+                    <input
+                        type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search Filter" 
+                        placeholder="Search Filter"
                         className="w-full pl-10 pr-4 py-2 bg-[#111111]/40 border border-white/5 rounded-xl text-[13px] font-sans text-white placeholder-neutral-500 focus:outline-none focus:border-white/20 transition-all"
                     />
                 </div>
-                
+
                 {/* Filters & Toggles */}
                 <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
                     {/* Time Range Selector */}
                     <div className="relative font-sans" ref={datePickerRef}>
                         <button
                             onClick={() => setIsTimeRangeOpen(!isTimeRangeOpen)}
-                            className={`flex items-center gap-2 bg-[#111111]/40 border px-4 py-2 rounded-xl text-white text-[13px] font-sans hover:bg-white/5 transition-all cursor-pointer select-none ${
-                                isTimeRangeOpen ? 'border-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.15)]' : 'border-white/5'
-                            }`}
+                            className={`flex items-center gap-2 bg-[#111111]/40 border px-4 py-2 rounded-xl text-white text-[13px] font-sans hover:bg-white/5 transition-all cursor-pointer select-none ${isTimeRangeOpen ? 'border-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.15)]' : 'border-white/5'
+                                }`}
                         >
-                            <Icon name="calendar_today" className="w-4 h-4 text-neutral-400"  />
+                            <Icon name="calendar_today" className="w-4 h-4 text-neutral-400" />
                             <span className="font-semibold text-neutral-200">{getTimeRangeLabel()}</span>
-                            <Icon name="expand_more" className={`w-3.5 h-3.5 text-neutral-500 transition-transform duration-200 ${isTimeRangeOpen ? 'rotate-180' : ''}`}  />
+                            <Icon name="expand_more" className={`w-3.5 h-3.5 text-neutral-500 transition-transform duration-200 ${isTimeRangeOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {isTimeRangeOpen && (
@@ -330,11 +355,10 @@ export default function LiveLogsPage() {
                                             setTimeRange(item.key);
                                             setIsTimeRangeOpen(false);
                                         }}
-                                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold font-sans transition-colors cursor-pointer ${
-                                            timeRange === item.key 
-                                                ? 'bg-white/10 text-white' 
+                                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold font-sans transition-colors cursor-pointer ${timeRange === item.key
+                                                ? 'bg-white/10 text-white'
                                                 : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                                        }`}
+                                            }`}
                                     >
                                         <span>{item.label}</span>
                                         {item.pro && (
@@ -352,24 +376,22 @@ export default function LiveLogsPage() {
                     <div className="flex items-center bg-[#111111]/40 border border-white/5 p-1 rounded-xl gap-1 select-none">
                         <button
                             onClick={() => setActiveTab('Logs')}
-                            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                activeTab === 'Logs'
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === 'Logs'
                                     ? 'bg-white/10 text-white shadow-sm border border-white/5'
                                     : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                            }`}
+                                }`}
                         >
-                            <Icon name="list" className="w-3.5 h-3.5"  />
+                            <Icon name="list" className="w-3.5 h-3.5" />
                             <span>Logs</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('Traces')}
-                            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                activeTab === 'Traces'
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === 'Traces'
                                     ? 'bg-white/10 text-white shadow-sm border border-white/5'
                                     : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                            }`}
+                                }`}
                         >
-                            <Icon name="alt_route" className="w-3.5 h-3.5 rotate-90"  />
+                            <Icon name="alt_route" className="w-3.5 h-3.5 rotate-90" />
                             <span>Traces</span>
                         </button>
                     </div>
@@ -378,21 +400,20 @@ export default function LiveLogsPage() {
                     <div className="relative font-sans" ref={columnSelectorRef}>
                         <button
                             onClick={() => setIsColumnSelectOpen(!isColumnSelectOpen)}
-                            className={`border p-2 rounded-xl text-white transition-all cursor-pointer ${
-                                isColumnSelectOpen
+                            className={`border p-2 rounded-xl text-white transition-all cursor-pointer ${isColumnSelectOpen
                                     ? 'text-[#06B6D4] bg-white/5 border-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.15)]'
                                     : 'text-neutral-400 hover:text-white bg-[#111111]/40 border-white/5'
-                            }`}
+                                }`}
                         >
-                            <Icon name="tune" className="w-4 h-4"  />
+                            <Icon name="tune" className="w-4 h-4" />
                         </button>
 
                         {isColumnSelectOpen && (
                             <div className="absolute right-0 mt-1.5 w-64 bg-[#18181B] border border-white/10 rounded-xl shadow-2xl p-3.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                                 {/* Search Columns Input */}
                                 <div className="relative mb-3">
-                                    <Icon name="search" className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500"  />
-                                    <input 
+                                    <Icon name="search" className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
+                                    <input
                                         type="text"
                                         placeholder="Search columns..."
                                         value={columnSearchQuery}
@@ -403,13 +424,13 @@ export default function LiveLogsPage() {
 
                                 {/* Select All / Reset Actions */}
                                 <div className="flex items-center gap-3.5 mb-3 px-1 text-xs select-none">
-                                    <button 
+                                    <button
                                         onClick={selectAllColumns}
                                         className="text-[#06B6D4] hover:text-cyan-300 font-semibold cursor-pointer transition-colors"
                                     >
                                         Select All
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={resetColumns}
                                         className="text-neutral-400 hover:text-white font-semibold cursor-pointer transition-colors"
                                     >
@@ -425,17 +446,16 @@ export default function LiveLogsPage() {
                                         filteredColumnOptions.map((col) => {
                                             const isChecked = columns[col.key];
                                             return (
-                                                <div 
+                                                <div
                                                     key={col.key}
                                                     onClick={() => toggleColumn(col.key)}
                                                     className="flex items-center gap-2.5 px-1 py-0.5 text-xs text-neutral-300 font-semibold select-none cursor-pointer group hover:text-white"
                                                 >
                                                     {/* Custom High-Fidelity Checkbox */}
-                                                    <div className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
-                                                        isChecked 
-                                                            ? 'bg-[#06B6D4] border border-[#06B6D4]' 
+                                                    <div className={`w-4 h-4 rounded flex items-center justify-center transition-all ${isChecked
+                                                            ? 'bg-[#06B6D4] border border-[#06B6D4]'
                                                             : 'bg-[#0E0E10] border border-white/20 group-hover:border-white/40'
-                                                    }`}>
+                                                        }`}>
                                                         {isChecked && (
                                                             <svg className="w-2.5 h-2.5 text-neutral-950 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -457,16 +477,16 @@ export default function LiveLogsPage() {
             {/* Empty State / Body Content */}
             {isLoading ? (
                 <Card className="flex flex-col items-center justify-center py-20 rounded-xl">
-                    <Icon name="refresh" className="w-8 h-8 text-neutral-500 animate-spin mb-4"  />
+                    <Icon name="refresh" className="w-8 h-8 text-neutral-500 animate-spin mb-4" />
                     <span className="text-neutral-400 font-sans text-sm font-semibold">Syncing real-time telemetry stream...</span>
                 </Card>
             ) : filteredLogs.length === 0 || activeTab === 'Traces' ? (
                 /* High Fidelity Centered Empty State */
                 <Card className="flex flex-col items-center justify-center py-20 px-6 rounded-xl border border-white/5 bg-[#111111]/40 backdrop-blur-md">
                     <div className="w-14 h-14 rounded-full bg-[#18181B] border border-white/5 shadow-inner flex items-center justify-center text-neutral-400 mb-5">
-                        <Icon name="database" className="w-6 h-6 text-neutral-450"  />
+                        <Icon name="database" className="w-6 h-6 text-neutral-450" />
                     </div>
-                    
+
                     <h3 className="text-[16px] font-sans font-bold text-white mb-1.5 text-center tracking-tight">
                         {activeTab === 'Logs' ? 'No Logs Found for Selected Filters' : 'No Traces Found for Selected Filters'}
                     </h3>
@@ -501,8 +521,8 @@ export default function LiveLogsPage() {
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {filteredLogs.map((log, i) => (
-                                    <tr 
-                                        key={i} 
+                                    <tr
+                                        key={i}
                                         onClick={() => setSelectedLog(log)}
                                         className="hover:bg-white/[0.02] transition-colors cursor-pointer group"
                                     >
@@ -513,23 +533,33 @@ export default function LiveLogsPage() {
                                         </td>
                                         {columns.path && (
                                             <td className="px-6 py-4 font-mono text-white font-medium">
-                                                <div className="flex items-center gap-2">
-                                                    {log.endpoint}
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    <span>{log.endpoint}</span>
                                                     {log.cacheHit && (
-                                                        <span className="inline-flex items-center bg-emerald-950/30 text-emerald-400 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border border-emerald-500/10">
-                                                            CACHE HIT
+                                                        <span className="inline-flex items-center bg-emerald-950/30 text-emerald-400 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border border-emerald-500/15">
+                                                            {log.cacheTier === 'semantic' ? 'SEMANTIC HIT' : 'EXACT HIT'}
+                                                        </span>
+                                                    )}
+                                                    {log.isStreaming && (
+                                                        <span className="inline-flex items-center bg-cyan-950/30 text-cyan-300 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border border-cyan-500/20">
+                                                            STREAM
+                                                        </span>
+                                                    )}
+                                                    {log.failoverUsed && (
+                                                        <span className="inline-flex items-center bg-amber-950/30 text-amber-300 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border border-amber-500/20">
+                                                            FAILOVER
                                                         </span>
                                                     )}
                                                 </div>
                                             </td>
                                         )}
                                         {columns.model && <td className="px-6 py-4 font-mono text-neutral-400">{log.model || 'none'}</td>}
-                                        {columns.workspace && <td className="px-6 py-4 font-sans text-neutral-400">Shared Workspace</td>}
+                                        {columns.workspace && <td className="px-6 py-4 font-sans text-neutral-400">{activeOrg?.name || 'My Workspace'}</td>}
                                         {columns.user && <td className="px-6 py-4 font-mono text-neutral-400">{log.ip || '127.0.0.1'}</td>}
                                         {columns.tokens && (
                                             <td className="px-6 py-4 text-right font-mono text-neutral-400">
                                                 <div>{log.tokensUsed || 0}</div>
-                                                <div className="text-[10px] text-neutral-500">${((log.tokensUsed || 0) * 0.0000015).toFixed(5)}</div>
+                                                <div className="text-[10px] text-neutral-500">${computeLogCostUsd(log).toFixed(6)}</div>
                                             </td>
                                         )}
                                         {columns.status && (
@@ -555,7 +585,7 @@ export default function LiveLogsPage() {
                         </table>
                     </div>
                     <div className="border-t border-white/5 p-4 bg-white/[0.01] flex items-center justify-center text-neutral-400 text-[12px] font-mono gap-2 rounded-b-xl">
-                        <Icon name="terminal" className="w-4 h-4 text-neutral-500"  />
+                        <Icon name="terminal" className="w-4 h-4 text-neutral-500" />
                         Observability logs successfully synced to PostgreSQL
                     </div>
                 </Card>
@@ -564,20 +594,18 @@ export default function LiveLogsPage() {
             {/* Premium Full-Width Bottom Documentation Card */}
             <div className="bg-[#111111]/40 border border-white/5 backdrop-blur-md hover:border-white/10 transition-all p-4 rounded-xl flex items-center gap-4 mt-6">
                 <div className="p-2.5 rounded-lg bg-white/5 border border-white/5 text-neutral-400 flex items-center justify-center shrink-0">
-                    <Icon name="book" className="w-5 h-5 text-neutral-300"  />
+                    <Icon name="book" className="w-5 h-5 text-neutral-300" />
                 </div>
                 <div className="flex-1 min-w-0">
                     <h4 className="text-[13px] font-bold text-white font-sans leading-normal">Documentation</h4>
                     <p className="text-[12px] text-neutral-400 font-sans leading-relaxed">
-                        Learn how to integrate Portkey and start logging your AI requests.{' '}
-                        <a 
-                            href="https://portkey.ai/docs" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
+                        Learn how to integrate FlowOps HQ and start logging your AI requests.{' '}
+                        <Link
+                            to="/docs/introduction"
                             className="text-cyan-400 hover:text-cyan-300 transition-colors font-semibold inline-flex items-center gap-0.5 hover:underline cursor-pointer"
                         >
                             Learn More →
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>
@@ -586,7 +614,7 @@ export default function LiveLogsPage() {
             {selectedLog && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end transition-all">
                     <div className="w-full max-w-[500px] bg-[#111111] border-l border-white/5 h-full shadow-2xl flex flex-col p-6 overflow-y-auto space-y-6">
-                        
+
                         {/* Drawer Header */}
                         <div className="flex justify-between items-start border-b border-white/5 pb-4">
                             <div>
@@ -600,11 +628,11 @@ export default function LiveLogsPage() {
                                 </div>
                                 <h3 className="text-[16px] font-mono font-bold text-white">{selectedLog.endpoint}</h3>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setSelectedLog(null)}
                                 className="p-1.5 hover:bg-white/5 rounded-full transition-colors cursor-pointer"
                             >
-                                <Icon name="close" className="w-5 h-5 text-neutral-400 hover:text-white"  />
+                                <Icon name="close" className="w-5 h-5 text-neutral-400 hover:text-white" />
                             </button>
                         </div>
 
@@ -627,7 +655,7 @@ export default function LiveLogsPage() {
                         {/* Token Consumption Detail */}
                         <div className="border border-white/5 bg-white/2 rounded-xl p-4 space-y-3">
                             <div className="flex items-center gap-2 text-white font-sans font-bold text-[13px] border-b border-white/5 pb-2">
-                                <Icon name="memory" className="w-4 h-4 text-neutral-400"  />
+                                <Icon name="memory" className="w-4 h-4 text-neutral-400" />
                                 Token Consumption Breakdown
                             </div>
                             <div className="flex justify-between items-center text-xs text-neutral-400">
@@ -647,33 +675,43 @@ export default function LiveLogsPage() {
                         {/* Caching Status Panel */}
                         <div className="border border-white/5 bg-white/2 rounded-xl p-4 space-y-3">
                             <div className="flex items-center gap-2 text-white font-sans font-bold text-[13px] border-b border-white/5 pb-2">
-                                <Icon name="database" className="w-4 h-4 text-emerald-450"  />
+                                <Icon name="database" className="w-4 h-4 text-emerald-450" />
                                 Edge Cache Status
                             </div>
                             <div className="flex justify-between items-center text-xs text-neutral-400">
                                 <span>Served from Edge Cache</span>
                                 <span className={`font-sans font-bold ${selectedLog.cacheHit ? 'text-emerald-400' : 'text-neutral-500'}`}>
-                                    {selectedLog.cacheHit ? 'YES' : 'NO'}
+                                    {selectedLog.cacheHit
+                                        ? `YES (${selectedLog.cacheTier === 'semantic' ? 'Tier 2 Semantic' : 'Tier 1 Exact'})`
+                                        : 'NO'}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-xs text-neutral-450">
-                                <span>Redis Response Time</span>
-                                <span className="font-mono text-white font-bold">{selectedLog.cacheHit ? '< 10ms' : 'N/A'}</span>
+                                <span>Measured Cache Latency</span>
+                                <span className="font-mono text-white font-bold">{selectedLog.cacheHit ? `${selectedLog.latencyMs}ms` : 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs text-neutral-450">
+                                <span>Delivery Mode &amp; Resilience</span>
+                                <span className="font-mono text-white font-bold">
+                                    {selectedLog.isStreaming ? 'SSE Stream' : 'Unary JSON'}
+                                    {selectedLog.failoverUsed ? ' • Failover' : ''}
+                                    {Number(selectedLog.retryAttempts || 0) > 0 ? ` • ${selectedLog.retryAttempts} Retries` : ''}
+                                </span>
                             </div>
                         </div>
 
                         {/* Detailed Metadata */}
                         <div className="space-y-2 text-[12px] text-neutral-400 font-sans border-t border-white/5 pt-4">
                             <div className="flex items-center gap-2">
-                                <Icon name="calendar_today" className="w-3.5 h-3.5 text-neutral-500"  />
+                                <Icon name="calendar_today" className="w-3.5 h-3.5 text-neutral-500" />
                                 <span>Date: {new Date(selectedLog.timestamp).toLocaleDateString()}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Icon name="schedule" className="w-3.5 h-3.5 text-neutral-500"  />
+                                <Icon name="schedule" className="w-3.5 h-3.5 text-neutral-500" />
                                 <span>Time: {new Date(selectedLog.timestamp).toLocaleTimeString()}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Icon name="network" className="w-3.5 h-3.5 text-neutral-500"  />
+                                <Icon name="network" className="w-3.5 h-3.5 text-neutral-500" />
                                 <span>Client IP Address: {selectedLog.ip || '127.0.0.1'}</span>
                             </div>
                         </div>

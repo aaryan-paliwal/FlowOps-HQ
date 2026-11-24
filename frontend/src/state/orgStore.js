@@ -13,33 +13,46 @@ export const useOrgStore = create((set) => {
             if (userStr) {
                 const user = JSON.parse(userStr);
                 if (user.company) return user.company;
-            }
-            const onboardingStr = localStorage.getItem('flowops_onboarding_default') || localStorage.getItem('flowops_onboarding_user_fop_1x9k2m');
-            if (onboardingStr) {
-                const onboarding = JSON.parse(onboardingStr);
-                if (onboarding.orgName) return onboarding.orgName;
+                if (user.id) {
+                    const onboardingStr = localStorage.getItem(`flowops_onboarding_${user.id}`);
+                    if (onboardingStr) {
+                        const onboarding = JSON.parse(onboardingStr);
+                        if (onboarding.orgName) return onboarding.orgName;
+                    }
+                }
             }
         } catch {
             // Ignore malformed or unavailable localStorage during boot.
         }
-        return "My Workspace";
+        return 'My Workspace';
     };
 
-    // Try to load from localStorage first
+    const buildDefaultState = () => ({
+        organisations: [
+            {
+                id: 1,
+                name: getInitialWorkspaceName(),
+                slug: 'workspace-1',
+                useCase: 'Company',
+                environment: 'Production',
+            },
+        ],
+        activeOrgId: 1,
+    });
+
     const savedState = (() => {
         try {
             const data = localStorage.getItem('flowops_org_state');
             if (data) {
                 const parsed = JSON.parse(data);
-                // Force sync the primary workspace (id: 1) with the current auth/onboarding name
                 if (parsed.organisations && parsed.organisations.length > 0) {
                     if (parsed.organisations[0].id === 1) {
                         parsed.organisations[0].name = getInitialWorkspaceName();
+                        parsed.organisations[0].slug = 'workspace-1';
                     }
-                    // Ensure all saved orgs have slugs (backwards compatibility)
-                    parsed.organisations = parsed.organisations.map(org => ({
+                    parsed.organisations = parsed.organisations.map((org) => ({
                         ...org,
-                        slug: org.slug || generateSlug(org.name, org.id)
+                        slug: org.slug || generateSlug(org.name, org.id),
                     }));
                 }
                 return parsed;
@@ -50,65 +63,86 @@ export const useOrgStore = create((set) => {
         return null;
     })();
 
-    // Force override for testing
-    const initialState = {
-        organisations: [
-            { 
-                id: 1, 
-                name: "Workspace A", 
-                slug: "workspace-a",
-                useCase: "Company", 
-                environment: "Production" 
-            }
-        ],
-        activeOrgId: 1
-    };
+    const initialState = buildDefaultState();
 
     return {
         ...(savedState || initialState),
-        
-        addOrganisation: (org) => set((state) => {
-            const newOrg = {
-                ...org,
-                slug: org.slug || generateSlug(org.name, org.id)
-            };
+
+        syncPrimaryWorkspaceName: (name) => set((state) => {
+            if (!name || !name.trim()) return state;
+            const trimmed = name.trim();
             const newState = {
-                organisations: [...state.organisations, newOrg],
-                activeOrgId: newOrg.id
+                ...state,
+                organisations: state.organisations.map((org) =>
+                    org.id === 1 ? { ...org, name: trimmed, slug: 'workspace-1' } : org
+                ),
             };
             try { localStorage.setItem('flowops_org_state', JSON.stringify(newState)); } catch {
                 // Ignore localStorage write failures.
             }
             return newState;
         }),
-        
+
+        resetOrganisations: () => {
+            try { localStorage.removeItem('flowops_org_state'); } catch {
+                // Ignore localStorage failures.
+            }
+            set({
+                organisations: [
+                    {
+                        id: 1,
+                        name: 'My Workspace',
+                        slug: 'workspace-1',
+                        useCase: 'Company',
+                        environment: 'Production',
+                    },
+                ],
+                activeOrgId: 1,
+            });
+        },
+
+        addOrganisation: (org) => set((state) => {
+            const newOrg = {
+                ...org,
+                slug: org.slug || generateSlug(org.name, org.id),
+            };
+            const newState = {
+                organisations: [...state.organisations, newOrg],
+                activeOrgId: newOrg.id,
+            };
+            try { localStorage.setItem('flowops_org_state', JSON.stringify(newState)); } catch {
+                // Ignore localStorage write failures.
+            }
+            return newState;
+        }),
+
         updateOrganisation: (id, updates) => set((state) => {
             const newState = {
                 ...state,
-                organisations: state.organisations.map(org => {
+                organisations: state.organisations.map((org) => {
                     if (org.id === id) {
                         const updatedOrg = { ...org, ...updates };
-                        // If name was updated, regenerate slug
-                        if (updates.name && updates.name !== org.name) {
+                        // Keep primary workspace slug anchored to 'workspace-1' for backend route parity
+                        if (org.id !== 1 && updates.name && updates.name !== org.name) {
                             updatedOrg.slug = generateSlug(updates.name, id);
                         }
                         return updatedOrg;
                     }
                     return org;
-                })
+                }),
             };
             try { localStorage.setItem('flowops_org_state', JSON.stringify(newState)); } catch {
                 // Ignore localStorage write failures.
             }
             return newState;
         }),
-        
+
         setActiveOrgId: (id) => set((state) => {
             const newState = { ...state, activeOrgId: id };
             try { localStorage.setItem('flowops_org_state', JSON.stringify(newState)); } catch {
                 // Ignore localStorage write failures.
             }
             return newState;
-        })
+        }),
     };
 });

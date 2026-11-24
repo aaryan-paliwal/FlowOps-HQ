@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import Icon from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { analyticsService, logsService } from '../services/api';
@@ -210,6 +210,17 @@ export default function AnalyticsPage() {
         refetchInterval: 5000
     });
 
+    const clearCacheMutation = useMutation({
+        mutationFn: () => analyticsService.clearCache(),
+        onSuccess: (res) => {
+            const d = res?.data || {};
+            refetchCache();
+            refetchOverview();
+            toast.success(`Cleared cache (${d.deletedExact || 0} Redis exact keys, ${d.deletedSemantic || 0} pgvector entries)`);
+        },
+        onError: (err) => toast.error(err?.message || 'Failed to flush cache'),
+    });
+
     const handleRefresh = () => {
         refetchOverview();
         refetchTraffic();
@@ -226,11 +237,14 @@ export default function AnalyticsPage() {
 
     const avgLatency = overview?.avgLatency || 0;
 
-    const currentLatencyVal = latencyPercentile === 'P50' 
-        ? `${avgLatency}ms` 
-        : latencyPercentile === 'P90' 
-            ? `${Math.round(avgLatency * 1.3)}ms` 
-            : `${Math.round(avgLatency * 1.8)}ms`;
+    const currentLatencyVal =
+        latencyPercentile === 'P50'
+            ? `${overview?.p50Latency ?? avgLatency}ms`
+            : latencyPercentile === 'P90'
+                ? `${overview?.p90Latency ?? 0}ms`
+                : latencyPercentile === 'P95'
+                    ? `${overview?.p95Latency ?? 0}ms`
+                    : `${overview?.p99Latency ?? 0}ms`;
 
     const logsList = Array.isArray(logsData) ? logsData : (logsData?.data || []);
     const uniqueIps = new Set(logsList.map(log => log.ip).filter(Boolean));
@@ -541,6 +555,28 @@ export default function AnalyticsPage() {
             {/* Subtab views */}
             {activeSubtab === 'Overview' && (
                 <>
+                    {/* Live Gateway Engine Capabilities Summary Strip */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">Tier 1 Exact Hits (Redis)</span>
+                            <span className="text-xl font-bold text-cyan-400 font-mono mt-1 block">{overview?.exactCacheHits ?? 0}</span>
+                        </div>
+                        <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">Tier 2 Semantic Hits (pgvector)</span>
+                            <span className="text-xl font-bold text-cyan-300 font-mono mt-1 block">{overview?.semanticCacheHits ?? 0}</span>
+                        </div>
+                        <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">SSE Streamed Requests</span>
+                            <span className="text-xl font-bold text-cyan-400 font-mono mt-1 block">{overview?.streamingRequests ?? 0}</span>
+                        </div>
+                        <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">Failovers / Retries</span>
+                            <span className="text-xl font-bold text-red-400 font-mono mt-1 block">
+                                {overview?.failoverRequests ?? 0} <span className="text-xs text-neutral-400">({overview?.totalRetries ?? 0} retries)</span>
+                            </span>
+                        </div>
+                    </div>
+
                     {/* Top Row: Cost & Tokens Used */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                         {/* Cost */}
@@ -630,7 +666,7 @@ export default function AnalyticsPage() {
                                     </button>
                                     {isPercentileOpen && (
                                         <div className="absolute right-0 mt-1 w-20 bg-[#111111] border border-white/5 rounded shadow-xl z-30 p-1">
-                                            {['P50', 'P90', 'P99'].map(p => (
+                                            {['P50', 'P90', 'P95', 'P99'].map(p => (
                                                 <button
                                                     key={p}
                                                     onClick={() => {
@@ -1116,12 +1152,24 @@ export default function AnalyticsPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Cache Hits */}
                         <Card className="flex flex-col bg-[#0C0C0C] border border-white/5 p-4 rounded-xl relative">
-                            <div className="flex flex-col mb-1">
-                                <span className="text-xs font-semibold text-neutral-455 font-sans">Cache Hits</span>
-                                <span className="text-2xl font-bold text-white font-sans leading-none mt-1">
-                                    {cacheMetrics ? cacheMetrics.cacheHits : '...'}
-                                </span>
-                                <span className="text-[10px] text-neutral-500 font-sans mt-1">Total number of requests successfully served from semantic cache.</span>
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-semibold text-neutral-455 font-sans">Cache Hits (Tier 1 + Tier 2)</span>
+                                    <span className="text-2xl font-bold text-white font-sans leading-none mt-1">
+                                        {cacheMetrics ? cacheMetrics.cacheHits : '...'}
+                                    </span>
+                                    <span className="text-[10px] text-neutral-500 font-sans mt-1">
+                                        {cacheMetrics ? `${cacheMetrics.exactHits ?? 0} Redis exact • ${cacheMetrics.semanticHits ?? 0} pgvector semantic • ${cacheMetrics.semanticEntries ?? 0} active vectors` : 'Loading breakdown...'}
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    disabled={clearCacheMutation.isPending}
+                                    onClick={() => clearCacheMutation.mutate()}
+                                    className="px-2.5 py-1 rounded border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-sans font-bold cursor-pointer disabled:opacity-50"
+                                >
+                                    {clearCacheMutation.isPending ? 'Flushing...' : 'Flush 2-Tier Cache'}
+                                </button>
                             </div>
                             <div className="w-full h-[150px] mt-2">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -1258,6 +1306,48 @@ export default function AnalyticsPage() {
                             </div>
                         </Card>
                     </div>
+
+                    {/* Row 3: Live pgvector Semantic Cache Index */}
+                    <Card className="flex flex-col bg-[#0C0C0C] border border-white/5 rounded-xl p-0 overflow-hidden">
+                        <div className="flex justify-between items-center p-4 border-b border-white/5 bg-white/[0.01]">
+                            <div>
+                                <h3 className="text-xs font-bold text-white font-sans">Active pgvector Semantic Index (Tier 2)</h3>
+                                <span className="text-[10px] text-neutral-500 font-sans">
+                                    384-dim MiniLM-L6-v2 embeddings stored in PostgreSQL ({cacheMetrics?.semanticEntries ?? 0} entries, {(cacheMetrics?.totalTokensCached ?? 0).toLocaleString()} tokens cached)
+                                </span>
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto p-4">
+                            {cacheMetrics?.recentEntries?.length > 0 ? (
+                                <table className="w-full text-left text-[12px] font-sans">
+                                    <thead>
+                                        <tr className="border-b border-white/5 text-[10px] text-neutral-455 font-bold uppercase tracking-wider">
+                                            <th className="py-2 pr-4">Model</th>
+                                            <th className="py-2 pr-4">Prompt Text</th>
+                                            <th className="py-2 pr-4 text-right">Tokens</th>
+                                            <th className="py-2 text-right">Expires</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {cacheMetrics.recentEntries.map((entry) => (
+                                            <tr key={entry.id} className="hover:bg-white/[0.01]">
+                                                <td className="py-2 pr-4 font-mono text-cyan-300">{entry.model}</td>
+                                                <td className="py-2 pr-4 text-neutral-200 max-w-md truncate">{entry.promptText}</td>
+                                                <td className="py-2 pr-4 text-right font-mono text-neutral-355">{entry.tokensUsed}</td>
+                                                <td className="py-2 text-right font-mono text-neutral-500">
+                                                    {new Date(entry.expiresAt).toLocaleTimeString()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="text-[12px] text-neutral-500 font-sans py-4 text-center">
+                                    No active pgvector semantic entries yet. Send deterministic (temperature=0) requests via Playground or SDK to populate the vector index.
+                                </p>
+                            )}
+                        </div>
+                    </Card>
                 </div>
             )}
 
@@ -1561,7 +1651,7 @@ export default function AnalyticsPage() {
                                 <>
                                     <Card className="bg-[#0C0C0C] border border-white/5 rounded-xl p-4">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Icon name="auto_awesome" className="w-3.5 h-3.5 text-purple-400"  />
+                                            <Icon name="auto_awesome" className="w-3.5 h-3.5 text-cyan-400"  />
                                             <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Tokens Saved</span>
                                         </div>
                                         <p className="text-2xl font-bold text-white font-mono">{totalTokensSaved.toLocaleString()}</p>
@@ -1585,7 +1675,7 @@ export default function AnalyticsPage() {
                                     </Card>
                                     <Card className="bg-[#0C0C0C] border border-white/5 rounded-xl p-4">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-purple-400 text-sm">₹</span>
+                                            <span className="text-red-400 text-sm font-bold">₹</span>
                                             <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Est. Cost Saved</span>
                                         </div>
                                         <p className="text-2xl font-bold text-white font-mono">₹{estimatedCostSaved < 1 ? estimatedCostSaved.toFixed(5) : estimatedCostSaved.toFixed(2)}</p>
@@ -1641,7 +1731,7 @@ export default function AnalyticsPage() {
                                                     </td>
                                                     <td className="px-5 py-3 text-center">
                                                         {log.promptOptimized ? (
-                                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-950/50 text-purple-300 border border-purple-500/20">OPTIMIZED</span>
+                                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-950/50 text-cyan-300 border border-cyan-500/25">OPTIMIZED</span>
                                                         ) : (
                                                             <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-neutral-900 text-neutral-500 border border-white/5">PASSTHROUGH</span>
                                                         )}
@@ -1653,7 +1743,7 @@ export default function AnalyticsPage() {
                                 </table>
                             ) : (
                                 <div className="flex-1 flex flex-col items-center justify-center p-16">
-                                    <Icon name="auto_awesome" className="w-8 h-8 text-purple-500/30 mb-3"  />
+                                    <Icon name="auto_awesome" className="w-8 h-8 text-red-500/30 mb-3"  />
                                     <span className="text-[13px] font-semibold text-neutral-450">No optimization data yet</span>
                                     <span className="text-[11px] text-neutral-600 mt-1">Send requests through the gateway to see Codex optimization metrics</span>
                                 </div>
@@ -1672,8 +1762,8 @@ export default function AnalyticsPage() {
                                 { step: '4', title: 'Route', desc: 'Optimized prompt is forwarded to the target LLM provider' }
                             ].map(item => (
                                 <div key={item.step} className="flex items-start gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
-                                        <span className="text-[10px] font-bold text-purple-400">{item.step}</span>
+                                    <div className="w-6 h-6 rounded-full bg-red-950/40 border border-red-500/30 flex items-center justify-center shrink-0">
+                                        <span className="text-[10px] font-bold text-red-400">{item.step}</span>
                                     </div>
                                     <div>
                                         <p className="text-[11px] font-bold text-white">{item.title}</p>

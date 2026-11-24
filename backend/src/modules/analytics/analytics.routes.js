@@ -13,6 +13,8 @@ router.get('/llm-metrics', analyticsController.getLlmMetrics);
 
 // Advanced Premium Telemetry Tabs Endpoints
 router.get('/cache', analyticsController.getCacheMetrics);
+router.get('/cache/entries', analyticsController.getCacheEntries);
+router.delete('/cache', analyticsController.clearCache);
 router.get('/users', analyticsController.getUserMetrics);
 router.get('/feedback', analyticsController.getFeedbackMetrics);
 router.get('/summary', analyticsController.getSummaryMetrics);

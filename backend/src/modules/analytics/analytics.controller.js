@@ -1,5 +1,7 @@
-const { eq, and, gte, lte, inArray, count, avg, sum, desc } = require('drizzle-orm');
+const { eq, and, gte, lte, inArray, count, avg, sum, desc, sql } = require('drizzle-orm');
 const { db, apis, requestLogs, apiKeys } = require('../../config/database');
+const { getSemanticCacheStats, flushTwoTierCache } = require('../../gateway/core/cacheManager');
+const { MODEL_RATES } = require('../../gateway/core/alerts');
 const response = require('../../utils/formatResponse');
 
 // ─── Helper: build where conditions ───
@@ -28,64 +30,80 @@ async function getOverview(req, res, next) {
         if (apiIds.length === 0) {
             return response.success(res, {
                 totalRequests: 0, errorRate: 0, avgLatency: 0,
-                activeApis: 0, totalTokens: 0, cacheHitRatio: 0, costSaved: 0
+                p50Latency: 0, p90Latency: 0, p95Latency: 0, p99Latency: 0,
+                activeApis: 0, totalTokens: 0, cacheHitRatio: 0,
+                exactCacheHits: 0, semanticCacheHits: 0,
+                streamingRequests: 0, failoverRequests: 0, totalRetries: 0,
+                costSaved: 0, costSavedInr: 0, totalSavedTokens: 0,
+                optTokensSaved: 0, optimizedCount: 0
             });
         }
 
         const { apiId, from, to } = req.query;
         const whereClause = buildConditions(apiIds, apiId, from, to);
 
-        const [statsResult] = await db.select({
-            count: count(),
-            avgLatency: avg(requestLogs.latencyMs),
-        }).from(requestLogs).where(whereClause);
+        const [[agg], [activeResult]] = await Promise.all([
+            db.select({
+                totalRequests: count(),
+                avgLatency: avg(requestLogs.latencyMs),
+                p50Latency: sql`coalesce(percentile_cont(0.50) within group (order by ${requestLogs.latencyMs}), 0)`,
+                p90Latency: sql`coalesce(percentile_cont(0.90) within group (order by ${requestLogs.latencyMs}), 0)`,
+                p95Latency: sql`coalesce(percentile_cont(0.95) within group (order by ${requestLogs.latencyMs}), 0)`,
+                p99Latency: sql`coalesce(percentile_cont(0.99) within group (order by ${requestLogs.latencyMs}), 0)`,
+                totalTokens: sql`coalesce(sum(${requestLogs.tokensUsed}), 0)`,
+                errorCount: sql`count(*) filter (where ${requestLogs.statusCode} >= 400)`,
+                cacheHits: sql`count(*) filter (where ${requestLogs.cacheHit} = true)`,
+                exactCacheHits: sql`count(*) filter (where ${requestLogs.cacheHit} = true and (${requestLogs.cacheTier} = 'exact' or ${requestLogs.cacheTier} is null))`,
+                semanticCacheHits: sql`count(*) filter (where ${requestLogs.cacheHit} = true and ${requestLogs.cacheTier} = 'semantic')`,
+                cacheTokensSaved: sql`coalesce(sum(case when ${requestLogs.cacheHit} = true then ${requestLogs.promptTokens} else 0 end), 0)`,
+                streamingRequests: sql`count(*) filter (where ${requestLogs.isStreaming} = true)`,
+                failoverRequests: sql`count(*) filter (where ${requestLogs.failoverUsed} = true)`,
+                totalRetries: sql`coalesce(sum(${requestLogs.retryAttempts}), 0)`,
+                optimizedCount: sql`count(*) filter (where ${requestLogs.promptOptimized} = true)`,
+                optTokensSaved: sql`coalesce(sum(case when ${requestLogs.promptOptimized} = true then ${requestLogs.tokensSaved} else 0 end), 0)`,
+            }).from(requestLogs).where(whereClause),
+            db.select({ count: count() }).from(apis)
+                .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug), eq(apis.isActive, true))),
+        ]);
 
-        const [activeResult] = await db.select({ count: count() }).from(apis)
-            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug), eq(apis.isActive, true)));
-
-        const [tokenResult] = await db.select({
-            totalTokens: sum(requestLogs.tokensUsed),
-        }).from(requestLogs).where(whereClause);
-
-        const [errorResult] = await db.select({ count: count() }).from(requestLogs)
-            .where(and(whereClause, gte(requestLogs.statusCode, 400)));
-
-        const [cacheResult] = await db.select({ 
-            count: count(),
-            cacheTokensSaved: sum(requestLogs.promptTokens)
-        }).from(requestLogs)
-            .where(and(whereClause, eq(requestLogs.cacheHit, true)));
-
-        const [optResult] = await db.select({
-            optimizedCount: count(),
-            optTokensSaved: sum(requestLogs.tokensSaved)
-        }).from(requestLogs)
-            .where(and(whereClause, eq(requestLogs.promptOptimized, true)));
-
-        const totalRequests = Number(statsResult?.count) || 0;
-        const errorCount = Number(errorResult?.count) || 0;
+        const totalRequests = Number(agg?.totalRequests) || 0;
+        const errorCount = Number(agg?.errorCount) || 0;
         const errorRate = totalRequests > 0 ? Number(((errorCount / totalRequests) * 100).toFixed(2)) : 0;
-        const avgLatency = Math.round(Number(statsResult?.avgLatency) || 0);
-        const totalTokens = Number(tokenResult?.totalTokens) || 0;
-        
-        const cacheHits = Number(cacheResult?.count) || 0;
+        const avgLatency = Math.round(Number(agg?.avgLatency) || 0);
+        const p50Latency = Math.round(Number(agg?.p50Latency) || 0);
+        const p90Latency = Math.round(Number(agg?.p90Latency) || 0);
+        const p95Latency = Math.round(Number(agg?.p95Latency) || 0);
+        const p99Latency = Math.round(Number(agg?.p99Latency) || 0);
+        const totalTokens = Number(agg?.totalTokens) || 0;
+
+        const cacheHits = Number(agg?.cacheHits) || 0;
         const cacheHitRatio = totalRequests > 0 ? Number(((cacheHits / totalRequests) * 100).toFixed(2)) : 0;
-        
-        const cacheTokensSaved = Number(cacheResult?.cacheTokensSaved) || 0;
-        const optTokensSaved = Number(optResult?.optTokensSaved) || 0;
+
+        const cacheTokensSaved = Number(agg?.cacheTokensSaved) || 0;
+        const optTokensSaved = Number(agg?.optTokensSaved) || 0;
         const totalSavedTokens = cacheTokensSaved + optTokensSaved;
-        
-        // Approx blended rate: ₹0.04 per 1k tokens saved
         const costSavedInr = Number(((totalSavedTokens / 1000) * 0.04).toFixed(4));
 
         return response.success(res, {
-            totalRequests, errorRate: Number(errorRate), avgLatency,
-            activeApis: Number(activeResult?.count) || 0, totalTokens,
-            cacheHitRatio: Number(cacheHitRatio), 
-            costSavedInr, 
+            totalRequests,
+            errorRate: Number(errorRate),
+            avgLatency,
+            p50Latency,
+            p90Latency,
+            p95Latency,
+            p99Latency,
+            activeApis: Number(activeResult?.count) || 0,
+            totalTokens,
+            cacheHitRatio: Number(cacheHitRatio),
+            exactCacheHits: Number(agg?.exactCacheHits) || 0,
+            semanticCacheHits: Number(agg?.semanticCacheHits) || 0,
+            streamingRequests: Number(agg?.streamingRequests) || 0,
+            failoverRequests: Number(agg?.failoverRequests) || 0,
+            totalRetries: Number(agg?.totalRetries) || 0,
+            costSavedInr,
             totalSavedTokens,
             optTokensSaved,
-            optimizedCount: Number(optResult?.optimizedCount) || 0
+            optimizedCount: Number(agg?.optimizedCount) || 0,
         });
     } catch (err) { next(err); }
 }
@@ -291,23 +309,32 @@ async function getCacheMetrics(req, res, next) {
 
         if (apiIds.length === 0) {
             return response.success(res, {
-                cacheHits: 0, totalRequests: 0, cacheHitRate: 0, cacheSavings: 0,
-                avgCacheLatency: 0, avgNonCacheLatency: 0, cacheSpeedupPercent: 0, timeSeries: []
+                cacheHits: 0, exactHits: 0, semanticHits: 0,
+                totalRequests: 0, cacheHitRate: 0, cacheSavings: 0,
+                avgCacheLatency: 0, avgNonCacheLatency: 0, cacheSpeedupPercent: 0,
+                semanticEntries: 0, totalTokensCached: 0, recentEntries: [], timeSeries: []
             });
         }
 
         const { apiId, from, to } = req.query;
+        const targetApiIds = apiId ? (apiIds.includes(apiId) ? [apiId] : []) : apiIds;
         const whereClause = buildConditions(apiIds, apiId, from, to);
 
-        const logs = await db.select({
-            timestamp: requestLogs.timestamp,
-            cacheHit: requestLogs.cacheHit,
-            latencyMs: requestLogs.latencyMs,
-            promptTokens: requestLogs.promptTokens
-        }).from(requestLogs).where(whereClause).orderBy(requestLogs.timestamp);
+        const [logs, semanticStats] = await Promise.all([
+            db.select({
+                timestamp: requestLogs.timestamp,
+                cacheHit: requestLogs.cacheHit,
+                cacheTier: requestLogs.cacheTier,
+                latencyMs: requestLogs.latencyMs,
+                promptTokens: requestLogs.promptTokens
+            }).from(requestLogs).where(whereClause).orderBy(requestLogs.timestamp),
+            getSemanticCacheStats(targetApiIds),
+        ]);
 
         let totalRequests = logs.length;
         let cacheHitsCount = 0;
+        let exactHits = 0;
+        let semanticHits = 0;
         let cacheLatencySum = 0;
         let nonCacheLatencySum = 0;
         let promptTokensSaved = 0;
@@ -317,6 +344,8 @@ async function getCacheMetrics(req, res, next) {
         logs.forEach(log => {
             if (log.cacheHit) {
                 cacheHitsCount++;
+                if (log.cacheTier === 'semantic') semanticHits++;
+                else exactHits++;
                 cacheLatencySum += log.latencyMs;
                 promptTokensSaved += log.promptTokens;
             } else {
@@ -341,16 +370,12 @@ async function getCacheMetrics(req, res, next) {
         const cacheHitRate = totalRequests > 0 ? Number(((cacheHitsCount / totalRequests) * 100).toFixed(2)) : 0;
         const avgCacheLatency = cacheHitsCount > 0 ? Math.round(cacheLatencySum / cacheHitsCount) : 0;
         const nonCacheCount = totalRequests - cacheHitsCount;
-        let avgNonCacheLatency = nonCacheCount > 0 ? Math.round(nonCacheLatencySum / nonCacheCount) : 0;
-        
-        // If there are no non-cache hits in this window but we have cache hits, 
-        // we assume a standard LLM latency of ~1200ms to show the realistic speedup.
-        if (avgNonCacheLatency === 0 && cacheHitsCount > 0) {
-            avgNonCacheLatency = 1200;
-        }
+        const avgNonCacheLatency = nonCacheCount > 0 ? Math.round(nonCacheLatencySum / nonCacheCount) : 0;
 
         const speedupDiff = avgNonCacheLatency - avgCacheLatency;
-        const cacheSpeedupPercent = (cacheHitsCount > 0 && avgNonCacheLatency > 0) ? Math.max(0, Math.round((speedupDiff / avgNonCacheLatency) * 100)) : 0;
+        const cacheSpeedupPercent = (cacheHitsCount > 0 && avgNonCacheLatency > 0)
+            ? Math.max(0, Math.round((speedupDiff / avgNonCacheLatency) * 100))
+            : 0;
         const cacheSavings = Number(((promptTokensSaved / 1000) * 0.04).toFixed(4));
 
         const timeSeries = Array.from(hourlyMap.values()).map(dp => ({
@@ -361,9 +386,48 @@ async function getCacheMetrics(req, res, next) {
         }));
 
         return response.success(res, {
-            cacheHits: cacheHitsCount, totalRequests, cacheHitRate, cacheSavings,
-            avgCacheLatency, avgNonCacheLatency, cacheSpeedupPercent, timeSeries
+            cacheHits: cacheHitsCount,
+            exactHits,
+            semanticHits,
+            totalRequests,
+            cacheHitRate,
+            cacheSavings,
+            avgCacheLatency,
+            avgNonCacheLatency,
+            cacheSpeedupPercent,
+            semanticEntries: semanticStats.activeEntries,
+            totalTokensCached: semanticStats.totalTokensCached,
+            recentEntries: semanticStats.recentEntries,
+            timeSeries
         });
+    } catch (err) { next(err); }
+}
+
+async function getCacheEntries(req, res, next) {
+    try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
+        const userApis = await db.select({ id: apis.id }).from(apis)
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
+        const apiIds = userApis.map((a) => a.id);
+        const { apiId } = req.query;
+        const targetApiIds = apiId ? (apiIds.includes(apiId) ? [apiId] : []) : apiIds;
+
+        const stats = await getSemanticCacheStats(targetApiIds);
+        return response.success(res, stats);
+    } catch (err) { next(err); }
+}
+
+async function clearCache(req, res, next) {
+    try {
+        const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
+        const userApis = await db.select({ id: apis.id }).from(apis)
+            .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)));
+        const apiIds = userApis.map((a) => a.id);
+        const { apiId } = req.query;
+        const targetApiIds = apiId ? (apiIds.includes(apiId) ? [apiId] : []) : apiIds;
+
+        const result = await flushTwoTierCache(targetApiIds);
+        return response.success(res, result);
     } catch (err) { next(err); }
 }
 
@@ -554,7 +618,8 @@ async function getSummaryMetrics(req, res, next) {
             }
 
             const tokens = Number(g.tokens) || 0;
-            const cost = Number(((tokens / 1000000) * 125).toFixed(5)); // Assuming blended avg of ₹125/1M tokens
+            const usdPer1M = MODEL_RATES[label] ?? 0.50;
+            const cost = Number(((tokens / 1000000) * usdPer1M * 84).toFixed(5));
 
             return {
                 group: label,
@@ -578,6 +643,8 @@ module.exports = {
     getErrors,
     getLlmMetrics,
     getCacheMetrics,
+    getCacheEntries,
+    clearCache,
     getUserMetrics,
     getFeedbackMetrics,
     getSummaryMetrics

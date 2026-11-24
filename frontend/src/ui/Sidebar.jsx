@@ -96,12 +96,6 @@ export function Sidebar({ orgSlug }) {
         return location.pathname === path;
     };
 
-    const linkClass = (path) =>
-        `flex items-center gap-2.5 px-3 py-1 text-[12.5px] rounded-lg transition-colors ${isActive(path)
-            ? 'text-white bg-white/10 font-medium'
-            : 'text-white/60 hover:text-white hover:bg-white/5'
-        }`;
-
     const renderNavLink = (rawTo, iconName, label, disabled = false) => {
         // Prefix with workspace slug for URL-based routing
         const to = `/ws/${orgSlug || 'workspace'}${rawTo}`;
@@ -110,37 +104,45 @@ export function Sidebar({ orgSlug }) {
         if (disabled) {
             if (isCollapsed) {
                 return (
-                    <div key={label} className="group relative flex justify-center py-0">
+                    <div key={label} className="group relative flex justify-center py-0.5">
                         <div className="w-8 h-8 flex items-center justify-center rounded-lg text-white/20 cursor-not-allowed">
                             <Icon name={iconName} className="w-[18px] h-[18px]" />
                         </div>
-                        <div className="absolute left-full ml-3 px-2 py-1 bg-[#18181B] border border-white/10 text-white/60 text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                        <div className="absolute left-full ml-3 px-2 py-1 bg-[#08060a] border border-red-500/20 text-white/60 text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
                             {label} (Coming Soon)
                         </div>
                     </div>
                 );
             }
             return (
-                <a key={label} className="flex items-center gap-2.5 px-3 py-1 text-[12.5px] text-white/40 hover:text-white/60 rounded-lg cursor-not-allowed" href="#/">
-                    <Icon name={iconName} className="w-4 h-4" />
-                    <span>{label}</span>
-                </a>
+                <div key={label} className="flex items-center justify-between px-3 py-1.5 text-[12.5px] text-white/30 rounded-lg cursor-not-allowed select-none group">
+                    <div className="flex items-center gap-2.5">
+                        <Icon name={iconName} className="w-4 h-4 text-white/25" />
+                        <span>{label}</span>
+                    </div>
+                    <span className="text-[9px] font-mono tracking-wider uppercase px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.02] text-white/30">
+                        Soon
+                    </span>
+                </div>
             );
         }
 
         if (isCollapsed) {
             return (
-                <div key={to} className="group relative flex justify-center py-0">
+                <div key={to} className="group relative flex justify-center py-0.5">
                     <Link
                         to={to}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${active
-                            ? 'text-white bg-white/10 font-medium'
-                            : 'text-white/60 hover:text-white hover:bg-white/5'
+                        className={`relative w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 cursor-pointer ${active
+                            ? 'text-white bg-gradient-to-r from-red-950/60 to-red-900/30 border border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.25)] font-medium'
+                            : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
                             }`}
                     >
-                        <Icon name={iconName} className="w-[18px] h-[18px]" />
+                        <Icon name={iconName} className={`w-[18px] h-[18px] ${active ? 'text-red-400' : ''}`} />
+                        {active && (
+                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4] border border-[#060507]" />
+                        )}
                     </Link>
-                    <div className="absolute left-full ml-3 px-2 py-1 bg-[#18181B] border border-white/10 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                    <div className="absolute left-full ml-3 px-2 py-1 bg-[#08060a] border border-red-500/20 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
                         {label}
                     </div>
                 </div>
@@ -148,15 +150,27 @@ export function Sidebar({ orgSlug }) {
         }
 
         return (
-            <Link key={to} to={to} className={linkClass(to)}>
-                <Icon name={iconName} className="w-4 h-4" />
-                <span>{label}</span>
+            <Link
+                key={to}
+                to={to}
+                className={`flex items-center justify-between px-3 py-1.5 text-[12.5px] rounded-lg transition-all duration-200 ${active
+                    ? 'text-white bg-gradient-to-r from-red-950/60 via-red-900/25 to-transparent border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.18)] font-semibold'
+                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                    }`}
+            >
+                <div className="flex items-center gap-2.5">
+                    <Icon name={iconName} className={`w-4 h-4 transition-colors ${active ? 'text-red-400' : 'text-white/60'}`} />
+                    <span>{label}</span>
+                </div>
+                {active && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4] shrink-0" />
+                )}
             </Link>
         );
     };
 
     return (
-        <aside className={`h-screen sticky top-0 z-40 border-r border-white/5 flex flex-col bg-[#0C0C0C] shrink-0 font-sans select-none transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-60'}`}>
+        <aside className={`h-screen sticky top-0 z-40 border-r border-[rgba(153,27,27,0.25)] flex flex-col bg-[#060507] shrink-0 font-sans select-none transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-60'}`}>
             <div className={`flex flex-col h-full gap-2 transition-all duration-300 ${isCollapsed ? 'p-2' : 'p-3'}`}>
 
                 {/* Branding Header with Dropdown Trigger */}
@@ -180,22 +194,22 @@ export function Sidebar({ orgSlug }) {
                                 </svg>
                             </button>
 
-                            {/* Hexagonal logo */}
+                            {/* Hexagonal logo with Crimson Glow Halo */}
                             <button
                                 onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
-                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#12141a] to-[#0c0c0c] border border-white/5 hover:border-white/10 transition-all duration-200 active:scale-[0.95] cursor-pointer"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-red-950/40 to-[#060507] border border-red-500/25 shadow-[0_0_14px_rgba(239,68,68,0.2)] hover:border-red-500/40 hover:shadow-[0_0_20px_rgba(239,68,68,0.35)] transition-all duration-200 active:scale-[0.95] cursor-pointer"
                             >
                                 <img
                                     src="/Logo only.png?v=2"
                                     alt="FlowOps HQ"
-                                    className="h-5 w-auto object-contain rounded"
+                                    className="h-5 w-auto object-contain rounded drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]"
                                 />
                             </button>
 
-                            {/* Workspace initial */}
+                            {/* Workspace initial (Deep Wine & Crimson, NO Amber) */}
                             <button
                                 onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
-                                className="w-8 h-8 rounded-full bg-amber-950/20 border border-amber-500/10 hover:border-amber-500/30 flex items-center justify-center text-amber-500/70 hover:text-amber-500 text-[12.5px] font-bold transition-all cursor-pointer hover:bg-amber-950/30"
+                                className="w-8 h-8 rounded-full bg-red-950/40 border border-red-500/25 hover:border-red-500/50 flex items-center justify-center text-red-400 hover:text-red-300 text-[12.5px] font-bold transition-all cursor-pointer hover:bg-red-950/60 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
                             >
                                 {workspaceInitial}
                             </button>
@@ -204,13 +218,15 @@ export function Sidebar({ orgSlug }) {
                         <>
                             <button
                                 onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
-                                className="flex items-center gap-2 text-left cursor-pointer hover:bg-white/5 px-2 py-1.5 rounded-lg transition-all duration-200 group active:scale-[0.98]"
+                                className="flex items-center gap-2.5 text-left cursor-pointer hover:bg-white/5 px-2 py-1.5 rounded-lg transition-all duration-200 group active:scale-[0.98]"
                             >
-                                <img
-                                    src="/Logo only.png?v=2"
-                                    alt="FlowOps HQ"
-                                    className="h-5.5 w-auto object-contain rounded"
-                                />
+                                <div className="p-1 rounded-lg bg-gradient-to-br from-red-950/40 to-transparent border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.2)] shrink-0">
+                                    <img
+                                        src="/Logo only.png?v=2"
+                                        alt="FlowOps HQ"
+                                        className="h-5.5 w-auto object-contain rounded drop-shadow-[0_0_6px_rgba(239,68,68,0.3)]"
+                                    />
+                                </div>
                                 <span className="font-bold text-[14.5px] tracking-tight text-white flex items-center gap-1.5 font-sans">
                                     {companyName}
                                     <Icon name="expand_more" className={`w-3.5 h-3.5 text-white/40 group-hover:text-white/60 transition-transform duration-200 ${isOrgDropdownOpen ? 'rotate-180' : ''}`} />
@@ -230,9 +246,9 @@ export function Sidebar({ orgSlug }) {
                         </>
                     )}
 
-                    {/* Dropdown Menu */}
+                    {/* Dropdown Menu (Obsidian Glass + Wine Red Border) */}
                     {isOrgDropdownOpen && (
-                        <div className={`absolute w-80 bg-[#18181B] border border-white/10 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 font-sans ${isCollapsed ? 'left-16 top-10' : 'left-1.5 top-12'
+                        <div className={`absolute w-80 bg-[#08060a]/95 border border-[rgba(153,27,27,0.3)] rounded-xl shadow-[0_16px_50px_rgba(0,0,0,0.85),0_0_20px_rgba(239,68,68,0.1)] backdrop-blur-xl p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 font-sans ${isCollapsed ? 'left-16 top-10' : 'left-1.5 top-12'
                             }`}>
                             <div className="space-y-2.5">
                                 {/* Section Header */}
@@ -278,7 +294,7 @@ export function Sidebar({ orgSlug }) {
                                             className={`flex items-center justify-between p-1.5 rounded-lg border cursor-pointer transition-colors ${activeOrgId === org.id ? 'bg-white/[0.05] border-white/10' : 'bg-transparent border-transparent hover:bg-white/[0.02]'}`}
                                         >
                                             <div className="flex items-center gap-2.5">
-                                                <div className={`w-5.5 h-5.5 rounded-md flex items-center justify-center text-white text-[11px] font-bold ${activeOrgId === org.id ? 'bg-blue-600' : 'bg-neutral-800'}`}>
+                                                <div className={`w-5.5 h-5.5 rounded-md flex items-center justify-center text-white text-[11px] font-bold ${activeOrgId === org.id ? 'bg-gradient-to-br from-red-600 to-red-900 border border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 'bg-neutral-800'}`}>
                                                     {org.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div className="flex flex-col">
@@ -412,21 +428,21 @@ export function Sidebar({ orgSlug }) {
                         <div className="group relative flex justify-center">
                             <Link 
                                 to={`/ws/${orgSlug}/billing/upgrade`}
-                                className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-transparent border border-white/5 hover:border-white/20 hover:bg-white/5 flex items-center justify-center shrink-0 cursor-pointer active:scale-95 transition-all shadow-[0_0_10px_rgba(255,255,255,0.05)]"
+                                className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-950/30 to-transparent border border-red-500/20 hover:border-red-500/40 hover:bg-red-950/40 flex items-center justify-center shrink-0 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(239,68,68,0.15)]"
                             >
-                                <Icon name="emoji_events" className="w-5 h-5 text-amber-500" />
+                                <Icon name="emoji_events" className="w-5 h-5 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
                             </Link>
-                            <div className="absolute left-full ml-3 px-2 py-1 bg-[#18181B] border border-white/10 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                            <div className="absolute left-full ml-3 px-2 py-1 bg-[#08060a] border border-red-500/20 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
                                 Upgrade to Pro (Limit Exceeded)
                             </div>
                         </div>
                     ) : (
                         <Link 
                             to={`/ws/${orgSlug}/billing/upgrade`}
-                            className="block bg-gradient-to-br from-white/10 to-transparent border border-white/5 hover:border-white/20 p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] active:scale-[0.98]"
+                            className="block bg-gradient-to-br from-red-950/30 via-[#0a070c] to-transparent border border-[rgba(153,27,27,0.25)] hover:border-red-500/40 p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.15)] active:scale-[0.98]"
                         >
-                            <div className="w-9 h-9 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
-                                <Icon name="emoji_events" className="w-5 h-5 text-amber-500" />
+                            <div className="w-9 h-9 rounded-lg bg-red-950/40 border border-red-500/30 flex items-center justify-center shrink-0">
+                                <Icon name="emoji_events" className="w-5 h-5 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
                             </div>
                             <div>
                                 <p className="text-[12px] font-bold text-white leading-normal">Upgrade to Pro</p>

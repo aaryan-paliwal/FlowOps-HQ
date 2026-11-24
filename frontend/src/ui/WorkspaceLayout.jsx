@@ -3,6 +3,8 @@ import { useParams, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useOrgStore } from '../state/orgStore';
 import { Sidebar } from './Sidebar';
+import { ThemeSelectorButton } from './ThemeSelectorButton';
+import { ThemeSwitcherModal } from './ThemeSwitcherModal';
 
 export default function WorkspaceLayout() {
     const { orgSlug } = useParams();
@@ -38,9 +40,25 @@ export default function WorkspaceLayout() {
         <div className="min-h-screen text-white flex">
             <Sidebar orgSlug={orgSlug} />
             <div className="flex-1 flex flex-col min-h-screen min-w-0">
-                <main className="flex-1 p-10">
+                {/* Global Workspace Top Bar with Theme Selector */}
+                <header className="h-14 border-b border-[rgba(153,27,27,0.18)] px-8 flex items-center justify-between bg-[#060507]/75 backdrop-blur-xl">
+                    <div className="flex items-center gap-3">
+                        <span className="text-[13px] font-bold text-white font-sans tracking-tight">
+                            {activeOrg?.name}
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]" />
+                            {activeOrg?.environment || 'Production'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <ThemeSelectorButton />
+                    </div>
+                </header>
+                <main className="flex-1 p-8">
                     <Outlet key={activeOrg.id} context={{ orgSlug, activeOrg }} />
                 </main>
+                <ThemeSwitcherModal />
             </div>
         </div>
     );

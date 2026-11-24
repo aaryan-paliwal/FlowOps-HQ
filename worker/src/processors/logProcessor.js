@@ -7,7 +7,22 @@ const logger = require('../utils/logger');
  * Consumed from the "request-logs" queue.
  */
 async function processLog(job) {
-    const { apiId, endpoint, method, statusCode, latencyMs, ip, apiKeyId, requestId, timestamp } = job.data;
+    const {
+        apiId,
+        endpoint,
+        method,
+        statusCode,
+        latencyMs,
+        ip,
+        apiKeyId,
+        requestId,
+        timestamp,
+        cacheHit = false,
+        cacheTier = null,
+        isStreaming = false,
+        retryAttempts = 0,
+        failoverUsed = false,
+    } = job.data;
 
     logger.info('Processing log', { requestId, apiId, endpoint, statusCode });
 
@@ -20,6 +35,11 @@ async function processLog(job) {
         ip: ip || null,
         apiKeyId: apiKeyId || null,
         requestId: requestId || null,
+        cacheHit: Boolean(cacheHit),
+        cacheTier: cacheTier || null,
+        isStreaming: Boolean(isStreaming),
+        retryAttempts: Number(retryAttempts || 0),
+        failoverUsed: Boolean(failoverUsed),
         timestamp: new Date(timestamp),
     });
 

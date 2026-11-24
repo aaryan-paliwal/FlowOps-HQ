@@ -21,6 +21,10 @@ function logRequestAsync(logParams) {
         promptTokens = 0,
         completionTokens = 0,
         cacheHit = false,
+        cacheTier = null,
+        isStreaming = false,
+        retryAttempts = 0,
+        failoverUsed = false,
         provider = null,
         model = null,
         promptOptimized = false,
@@ -32,12 +36,13 @@ function logRequestAsync(logParams) {
     const logEntry = {
         apiId, endpoint, method, statusCode, latencyMs, ip, apiKeyId, requestId,
         promptTokens, completionTokens, tokensUsed: promptTokens + completionTokens,
-        cacheHit, provider, model, promptOptimized, originalPromptTokens,
+        cacheHit, cacheTier, isStreaming, retryAttempts, failoverUsed,
+        provider, model, promptOptimized, originalPromptTokens,
         tokensSaved, optimizationPercent, timestamp: new Date()
     };
-    
+
     batchQueue.push(logEntry);
-    
+
     // We trigger alerts synchronously or fire-and-forget them here
     checkAndTriggerAlerts(apiId).catch(err => logger.error('Alerts Error', { error: err.message }));
 }
@@ -49,10 +54,10 @@ const FLUSH_INTERVAL_MS = 5000;
 
 async function processBatch() {
     if (batchQueue.length === 0) return;
-    
+
     // Take up to BATCH_SIZE items from the queue
     const batch = batchQueue.splice(0, BATCH_SIZE);
-    
+
     try {
         await db.insert(requestLogs).values(batch);
         logger.info(`Observability: Batched ${batch.length} logs to DB`);

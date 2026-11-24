@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Icon from '../ui/Icon';
+import { GeneratedKeyView } from '../ui/GeneratedKeyView';
 import { useAuthStore } from '../state/authStore';
 import { useOrgStore } from '../state/orgStore';
 import { apiKeysService, apisService } from '../services/api';
@@ -41,8 +42,10 @@ export default function DashboardPage() {
     });
     const keysList = keysResponse?.data?.keys || [];
     const activeKey = keysList.find(k => !k.revoked);
-    const activeKeyPrefix = activeKey ? activeKey.keyPrefix : 'sk_live_mock_key_prefix_only';
-    const displayedKey = showKey ? activeKeyPrefix : `${activeKeyPrefix.substring(0, 16)}************************`;
+    const activeKeyPrefix = activeKey ? activeKey.keyPrefix : '';
+    const displayedKey = activeKeyPrefix
+        ? (showKey ? activeKeyPrefix : `${activeKeyPrefix.substring(0, 16)}************************`)
+        : 'No active API key generated yet';
 
     const { data: apisResponse } = useQuery({
         queryKey: ['apis'],
@@ -53,7 +56,19 @@ export default function DashboardPage() {
     // Step states
     const [selectedProvider, setSelectedProvider] = useState('Select new AI provider to integrate');
     const [integrationLang, setIntegrationLang] = useState('NodeJS');
-    const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
+    const [selectedModel, setSelectedModel] = useState('flowops-smart');
+    const [sessionTestKey, setSessionTestKey] = useState(() => sessionStorage.getItem('flowops_last_test_key') || '');
+    const [isTestingStep2, setIsTestingStep2] = useState(false);
+    const [step2TestResult, setStep2TestResult] = useState(null);
+
+    useEffect(() => {
+        const syncKey = () => {
+            const latest = sessionStorage.getItem('flowops_last_test_key');
+            if (latest) setSessionTestKey(latest);
+        };
+        window.addEventListener('flowops:test-key-updated', syncKey);
+        return () => window.removeEventListener('flowops:test-key-updated', syncKey);
+    }, []);
 
     // Quick Integration States
     const [isIntegrateOpen, setIsIntegrateOpen] = useState(false);
@@ -86,6 +101,10 @@ export default function DashboardPage() {
     const createKeyMutation = useMutation({
         mutationFn: (payload) => apiKeysService.createKey(payload),
         onSuccess: (keyRes) => {
+            if (keyRes?.data?.rawKey) {
+                sessionStorage.setItem('flowops_last_test_key', keyRes.data.rawKey);
+                window.dispatchEvent(new Event('flowops:test-key-updated'));
+            }
             setQuickCreatedKey(keyRes.data);
             queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
             queryClient.invalidateQueries({ queryKey: ['apis'] });
@@ -130,40 +149,109 @@ export default function DashboardPage() {
         toast.success(`${label} copied to clipboard!`);
     };
 
+    const gatewayBaseUrl = import.meta.env.VITE_GATEWAY_BASE_URL || 'http://localhost:5000/v1';
+    const snippetKeyDisplay = sessionTestKey || displayedKey;
+
+    const handleRunStep2Test = async () => {
+        const keyToUse = (sessionTestKey || sessionStorage.getItem('flowops_last_test_key') || '').trim();
+        if (!keyToUse) {
+            toast.error('Generate a virtual key in Step 1 (or paste one below) to run a live test.');
+            return;
+        }
+
+        setIsTestingStep2(true);
+        const start = performance.now();
+        try {
+            const res = await fetch(`${gatewayBaseUrl}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${keyToUse}`,
+                },
+                body: JSON.stringify({
+                    model: selectedModel,
+                    messages: [{ role: 'user', content: 'Say hello and name which AI model answered in one short sentence.' }],
+                    max_tokens: 500,
+                }),
+            });
+            const elapsedMs = Math.round(performance.now() - start);
+            const rawText = await res.text();
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch {
+                data = { rawText };
+            }
+
+            setStep2TestResult({
+                ok: res.ok,
+                status: res.status,
+                elapsedMs,
+                provider: res.headers.get('x-flowops-provider'),
+                modelSelected: res.headers.get('x-flowops-model-selected'),
+                classifierTier: res.headers.get('x-flowops-classifier-tier'),
+                routerReason: res.headers.get('x-flowops-router-reason'),
+                content: data?.choices?.[0]?.message?.content || data?.error?.message || rawText,
+            });
+            if (res.ok) {
+                toast.success(`Live test succeeded via ${res.headers.get('x-flowops-provider') || selectedModel}`);
+            } else {
+                toast.error(`Gateway returned HTTP ${res.status}`);
+            }
+        } catch (err) {
+            setStep2TestResult({
+                ok: false,
+                status: 0,
+                elapsedMs: Math.round(performance.now() - start),
+                content: err.message,
+            });
+            toast.error(`Network error: ${err.message}`);
+        } finally {
+            setIsTestingStep2(false);
+        }
+    };
+
     // Code snippets
     const codeSnippets = {
-        NodeJS: `import { FlowOpsClient } from "flowops";
+        NodeJS: `import OpenAI from "openai";
 
-const client = new FlowOpsClient({
-  apiKey: "${displayedKey}"
+const client = new OpenAI({
+  apiKey: "${snippetKeyDisplay}",
+  baseURL: "${gatewayBaseUrl}",
 });
 
-// Route traffic through FlowOps HQ Edge
+// Route traffic through FlowOps HQ Gateway
 const response = await client.chat.completions.create({
   model: "${selectedModel}",
   messages: [{
     role: "user",
     content: "Hello FlowOps HQ!"
-  }]
+  }],
+  max_tokens: 500,
 });`,
-        Python: `from flowops import FlowOpsClient
+        Python: `from openai import OpenAI
 
-client = FlowOpsClient(api_key="${displayedKey}")
+client = OpenAI(
+    api_key="${snippetKeyDisplay}",
+    base_url="${gatewayBaseUrl}",
+)
 
-# Route traffic through FlowOps HQ Edge
+# Route traffic through FlowOps HQ Gateway
 response = client.chat.completions.create(
-  model="${selectedModel}",
-  messages=[{
-    "role": "user", 
-    "content": "Hello FlowOps HQ!"
-  }]
+    model="${selectedModel}",
+    messages=[{
+        "role": "user",
+        "content": "Hello FlowOps HQ!"
+    }],
+    max_tokens=500,
 )`,
-        Curl: `curl -X POST http://localhost:5000/gateway/v1/chat/completions \\
-  -H "Authorization: Bearer ${displayedKey}" \\
+        Curl: `curl -X POST ${gatewayBaseUrl}/chat/completions \\
+  -H "Authorization: Bearer ${snippetKeyDisplay}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "model": "${selectedModel}",
-    "messages": [{"role": "user", "content": "Hello FlowOps HQ!"}]
+    "messages": [{"role": "user", "content": "Hello FlowOps HQ!"}],
+    "max_tokens": 500
   }'`
     };
 
@@ -250,29 +338,36 @@ response = client.chat.completions.create(
                             {/* API Key Part */}
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Icon name="check_circle" className="w-5 h-5 text-emerald-500 fill-emerald-500/20" />
-                                    <h4 className="font-bold text-[13.5px] text-white font-sans">Your FlowOps HQ API key is ready to use</h4>
+                                    <Icon
+                                        name={activeKeyPrefix ? 'check_circle' : 'vpn_key'}
+                                        className={`w-5 h-5 ${activeKeyPrefix ? 'text-emerald-500 fill-emerald-500/20' : 'text-amber-400'}`}
+                                    />
+                                    <h4 className="font-bold text-[13.5px] text-white font-sans">
+                                        {activeKeyPrefix ? 'Your FlowOps HQ API key is ready to use' : 'Generate an API key after registering a route'}
+                                    </h4>
                                 </div>
                                 <p className="text-[12.5px] text-neutral-450 font-sans">Use this to authenticate all your requests to FlowOps HQ</p>
 
                                 <div className="flex items-center gap-3 bg-black/60 border border-white/10 rounded-lg px-4 py-3 font-mono text-[13px] group hover:border-white/20 transition-colors shadow-inner">
-                                    <span className="flex-grow text-neutral-450 tracking-wider">
+                                    <span className={`flex-grow tracking-wider ${activeKeyPrefix ? 'text-neutral-450' : 'text-neutral-500 italic'}`}>
                                         {displayedKey}
                                     </span>
-                                    <div className="flex items-center gap-3 text-neutral-500">
-                                        <button
-                                            onClick={() => setShowKey(!showKey)}
-                                            className="hover:text-white transition-colors cursor-pointer"
-                                        >
-                                            {showKey ? <Icon name="visibility_off" className="w-4.5 h-4.5" /> : <Icon name="visibility" className="w-4.5 h-4.5" />}
-                                        </button>
-                                        <button
-                                            onClick={() => copyToClipboard(activeKeyPrefix, 'API Key')}
-                                            className="hover:text-white transition-colors cursor-pointer"
-                                        >
-                                            <Icon name="content_copy" className="w-4.5 h-4.5" />
-                                        </button>
-                                    </div>
+                                    {activeKeyPrefix && (
+                                        <div className="flex items-center gap-3 text-neutral-500">
+                                            <button
+                                                onClick={() => setShowKey(!showKey)}
+                                                className="hover:text-white transition-colors cursor-pointer"
+                                            >
+                                                {showKey ? <Icon name="visibility_off" className="w-4.5 h-4.5" /> : <Icon name="visibility" className="w-4.5 h-4.5" />}
+                                            </button>
+                                            <button
+                                                onClick={() => copyToClipboard(activeKeyPrefix, 'API Key')}
+                                                className="hover:text-white transition-colors cursor-pointer"
+                                            >
+                                                <Icon name="content_copy" className="w-4.5 h-4.5" />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -353,9 +448,10 @@ response = client.chat.completions.create(
                                         onChange={(e) => setSelectedModel(e.target.value)}
                                         className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 appearance-none text-white text-[13px] hover:border-white/20 focus:border-white/30 focus:outline-none transition-all font-sans cursor-pointer"
                                     >
+                                        <option value="flowops-smart">flowops-smart (Default Smart Classifier)</option>
+                                        <option value="gemini-3.5-flash">gemini-3.5-flash</option>
                                         <option value="gpt-4o">gpt-4o</option>
                                         <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
-                                        <option value="gemini-1.5-pro">gemini-1.5-pro</option>
                                     </select>
                                     <Icon name="expand_more" className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 w-4 h-4" />
                                 </div>
@@ -375,6 +471,82 @@ response = client.chat.completions.create(
                                 <pre className="p-5 text-[12.5px] leading-relaxed text-neutral-300 overflow-x-auto whitespace-pre-wrap font-mono">
                                     <code>{codeSnippets[integrationLang]}</code>
                                 </pre>
+                            </div>
+
+                            {/* Live Step 2 Test Bar & Result */}
+                            <div className="rounded-xl border border-white/10 bg-[#0b0b0b] p-4 space-y-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+                                    <input
+                                        type="password"
+                                        value={sessionTestKey}
+                                        onChange={(e) => {
+                                            setSessionTestKey(e.target.value);
+                                            if (e.target.value.trim()) {
+                                                sessionStorage.setItem('flowops_last_test_key', e.target.value.trim());
+                                            }
+                                        }}
+                                        placeholder="Paste flw_... virtual key (auto-fills after Step 1 key creation)"
+                                        className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50"
+                                    />
+                                    <button
+                                        type="button"
+                                        disabled={isTestingStep2}
+                                        onClick={handleRunStep2Test}
+                                        className="px-4 py-2 bg-white text-black hover:bg-neutral-200 rounded-lg font-sans font-bold text-[12px] inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60 shrink-0"
+                                    >
+                                        {isTestingStep2 ? (
+                                            <>
+                                                <Icon name="autorenew" className="w-3.5 h-3.5 animate-spin text-black" />
+                                                Testing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Icon name="play_arrow" className="w-3.5 h-3.5 text-black" />
+                                                Test Request
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {step2TestResult && (
+                                    <div className="rounded-lg border border-white/10 bg-[#111111] p-3.5 space-y-2">
+                                        <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                                            <span
+                                                className={`px-2 py-0.5 rounded font-bold border ${
+                                                    step2TestResult.ok
+                                                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                                                        : 'bg-red-500/15 border-red-500/30 text-red-400'
+                                                }`}
+                                            >
+                                                HTTP {step2TestResult.status || 'ERR'}
+                                            </span>
+                                            <span className="text-neutral-400">{step2TestResult.elapsedMs}ms</span>
+                                            {step2TestResult.provider && (
+                                                <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-300">
+                                                    provider: {step2TestResult.provider}
+                                                </span>
+                                            )}
+                                            {step2TestResult.modelSelected && (
+                                                <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-300">
+                                                    model: {step2TestResult.modelSelected}
+                                                </span>
+                                            )}
+                                            {step2TestResult.classifierTier && (
+                                                <span className="px-2 py-0.5 rounded bg-red-500/15 border border-red-500/30 text-red-300">
+                                                    tier: {step2TestResult.classifierTier}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {step2TestResult.routerReason && (
+                                            <p className="text-[11px] font-mono text-cyan-300/90">
+                                                {step2TestResult.routerReason}
+                                            </p>
+                                        )}
+                                        <p className="text-[12.5px] font-sans text-neutral-100 whitespace-pre-wrap">
+                                            {step2TestResult.content}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center justify-between pt-2">
@@ -401,51 +573,54 @@ response = client.chat.completions.create(
 
             {/* Quick Integration Dialog Modal */}
             {isIntegrateOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-[#111111] border border-white/5 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
-                        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className={`bg-[#08060a]/95 border border-[rgba(153,27,27,0.3)] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_25px_rgba(239,68,68,0.12)] backdrop-blur-2xl w-full max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col ${quickCreatedKey ? 'max-w-2xl' : 'max-w-lg'}`}>
+                        <div className="px-6 py-4 border-b border-[rgba(153,27,27,0.2)] flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded bg-white flex items-center justify-center text-black">
-                                    <Icon name="auto_awesome" className="w-4 h-4 text-black" />
+                                <div className="w-8 h-8 rounded-lg bg-red-950/40 border border-red-500/30 flex items-center justify-center text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                                    <Icon name={quickCreatedKey ? 'key' : 'auto_awesome'} className="w-4 h-4 text-red-400" />
                                 </div>
-                                <h3 className="font-bold text-[16px] text-white font-sans">Connect {integratingProvider}</h3>
+                                <h3 className="font-bold text-[16px] text-white font-sans">
+                                    {quickCreatedKey ? `${integratingProvider} API Key Generated` : `Connect ${integratingProvider}`}
+                                </h3>
                             </div>
                             <button
                                 onClick={() => setIsIntegrateOpen(false)}
-                                className="text-neutral-400 hover:text-white transition-colors rounded p-1 hover:bg-white/5 cursor-pointer"
+                                className="text-neutral-400 hover:text-white transition-colors rounded p-1 hover:bg-white/10 cursor-pointer"
+                                aria-label="Close modal"
                             >
                                 <Icon name="close" className="w-5 h-5" />
                             </button>
                         </div>
 
                         {!quickCreatedKey ? (
-                            <div className="p-6 space-y-4 font-sans text-[13px] text-neutral-350">
+                            <div className="p-6 space-y-4 font-sans text-[13px] text-neutral-300 overflow-y-auto">
                                 <p className="leading-relaxed">
                                     FlowOps HQ will instantly register a live gateway route context and generate a fresh API key for your <strong>{integratingProvider}</strong> apps.
                                 </p>
-                                <div className="p-4 rounded-lg bg-white/2 border border-white/5 space-y-2.5">
+                                <div className="p-4 rounded-xl bg-[#060507] border border-[rgba(153,27,27,0.3)] space-y-2.5">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Gateway Context Route</span>
-                                        <span className="font-mono text-cyan-400">/gateway/v1/chat/completions</span>
+                                        <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Drop-in Base URL</span>
+                                        <span className="font-mono text-cyan-400">/v1/chat/completions</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Target Upstream URL</span>
-                                        <span className="font-mono text-neutral-400 text-xs">{providerBaseUrls[integratingProvider]}</span>
+                                        <span className="font-mono text-neutral-300 text-xs">{providerBaseUrls[integratingProvider]}</span>
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-white/5 flex items-center justify-end gap-3">
+                                <div className="pt-4 border-t border-[rgba(153,27,27,0.2)] flex items-center justify-end gap-3">
                                     <button
                                         type="button"
                                         onClick={() => setIsIntegrateOpen(false)}
-                                        className="px-4 py-2 border border-white/5 rounded bg-white/5 hover:bg-white/10 font-sans font-bold text-[12px] text-white transition-colors cursor-pointer"
+                                        className="px-4 py-2 border border-[rgba(153,27,27,0.3)] rounded-lg bg-red-950/20 hover:bg-red-950/40 font-sans font-bold text-[12px] text-white transition-colors cursor-pointer"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={confirmQuickIntegrate}
                                         disabled={createApiMutation.isPending || createKeyMutation.isPending}
-                                        className="px-5 py-2 bg-white text-black hover:bg-neutral-200 rounded font-sans font-bold text-[12px] transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                                        className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] rounded-lg font-sans font-bold text-[12px] transition-all hover:scale-[1.02] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                                     >
                                         {(createApiMutation.isPending || createKeyMutation.isPending) && <Icon name="autorenew" className="w-3.5 h-3.5 animate-spin" />}
                                         Activate Route & Key
@@ -453,58 +628,13 @@ response = client.chat.completions.create(
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-6 space-y-5">
-                                <div className="bg-amber-950/20 border border-amber-500/20 rounded-lg p-4 flex gap-3 text-amber-400">
-                                    <Icon name="warning" className="w-5 h-5 text-amber-550 shrink-0 mt-0.5" />
-                                    <div className="space-y-1">
-                                        <h4 className="font-bold text-[12px] font-sans">Secure Key Storage Warning</h4>
-                                        <p className="text-[11px] font-sans leading-relaxed text-amber-300">
-                                            For security compliance, we do not store this private token key in plaintext. <strong>You will not be able to retrieve or view it again after closing this window.</strong> Please copy it immediately to a password manager or your local environment secrets.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide font-sans">Your Raw Gateway Token</label>
-                                    <div className="flex gap-2">
-                                        <div className="flex-1 bg-black rounded border border-white/5 px-4 py-3 flex items-center justify-between text-white font-mono text-[12px]">
-                                            <span className="truncate pr-4">{quickCreatedKey.rawKey}</span>
-                                            <button
-                                                onClick={() => copyToClipboard(quickCreatedKey.rawKey, 'modal')}
-                                                className="text-neutral-400 hover:text-white transition-colors cursor-pointer shrink-0"
-                                            >
-                                                <Icon name="content_copy" className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5 border-t border-white/5 pt-4 font-sans text-[11px] text-neutral-400">
-                                    <div className="flex items-center gap-1.5 font-semibold text-neutral-350 mb-1">
-                                        <Icon name="terminal" className="w-3.5 h-3.5 text-neutral-500" />
-                                        Example cURL program usage:
-                                    </div>
-                                    <pre className="bg-black border border-white/5 rounded p-3 overflow-x-auto font-mono text-[10px] text-neutral-350 leading-relaxed">
-                                        {`curl -X POST http://localhost:5000/gateway/v1/chat/completions \\
-  -H "Authorization: Bearer ${quickCreatedKey.rawKey}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "model": "${selectedModel}",
-    "messages": [{"role": "user", "content": "Hello FlowOps HQ!"}]
-  }'`}
-                                    </pre>
-                                </div>
-
-                                <div className="pt-4 border-t border-white/5 flex justify-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsIntegrateOpen(false)}
-                                        className="px-5 py-2.5 bg-white text-black hover:bg-neutral-200 rounded font-sans font-bold text-[12px] transition-colors shadow-sm cursor-pointer"
-                                    >
-                                        I Have Safely Stored This Key
-                                    </button>
-                                </div>
-                            </div>
+                            <GeneratedKeyView
+                                rawKey={quickCreatedKey.rawKey}
+                                keyName={quickCreatedKey.key?.name || `${integratingProvider} Quickstart Key`}
+                                routeName={`${integratingProvider} Gateway`}
+                                defaultModel={selectedModel || 'flowops-smart'}
+                                onClose={() => setIsIntegrateOpen(false)}
+                            />
                         )}
                     </div>
                 </div>

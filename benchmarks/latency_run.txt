@@ -1,0 +1,39 @@
+{
+  "benchmarkDate": "2026-11-08T05:20:40.000Z",
+  "provider": "Google Gemini",
+  "model": "gemini-3.5-flash",
+  "observedProviderCalls": [
+    { "run": 1, "prompt": "REST API concept #1", "cold_ms": 1953, "warm_ms": 10.1, "warm_tier": "exact_cache_hit" },
+    { "run": 2, "prompt": "REST API concept #2", "cold_ms": 1747, "warm_ms": 3.2, "warm_tier": "exact_cache_hit" },
+    { "run": 3, "prompt": "REST API concept #3", "cold_ms": 2027, "warm_ms": 4.1, "warm_tier": "exact_cache_hit" },
+    { "run": 4, "prompt": "REST API concept #4", "cold_ms": 1507, "warm_ms": 3.8, "warm_tier": "exact_cache_hit" },
+    { "run": 5, "prompt": "REST API concept #5", "cold_ms": 1788, "warm_ms": 4.5, "warm_tier": "exact_cache_hit" },
+    { "run": 6, "prompt": "REST API concept #6", "cold_ms": 1679, "warm_ms": 3.9, "warm_tier": "exact_cache_hit" },
+    { "run": 7, "prompt": "REST API concept #7", "cold_ms": 1448, "warm_ms": 4.2, "warm_tier": "exact_cache_hit" },
+    { "run": 8, "prompt": "REST API concept #8", "cold_ms": 1609, "warm_ms": 3.7, "warm_tier": "exact_cache_hit" },
+    { "run": 9, "prompt": "REST API concept #9", "cold_ms": 1914, "warm_ms": 4.0, "warm_tier": "exact_cache_hit" },
+    { "run": 10, "prompt": "REST API concept #10", "cold_ms": 2325, "warm_ms": 8.9, "warm_tier": "exact_cache_hit" }
+  ],
+  "sample_size_n": 10,
+  "cold_provider_latency": {
+    "min_ms": 1448,
+    "max_ms": 2325,
+    "p50_median_ms": 1768,
+    "p95_tail_ms": 2265,
+    "mean_ms": 1800
+  },
+  "warm_cached_latency": {
+    "min_ms": 3.2,
+    "max_ms": 10.1,
+    "p50_median_ms": 4.1,
+    "p95_tail_ms": 9.6,
+    "mean_ms": 5.0
+  },
+  "latency_reduction_percent": 99.77,
+  "rate_limit_observation": {
+    "metric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+    "daily_free_tier_limit": 20,
+    "cooldown_enforced": true
+  }
+}
+

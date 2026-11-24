@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Icon from '../../ui/Icon';
 import { useAuthStore } from '../../state/authStore';
+import { useOrgStore } from '../../state/orgStore';
 
 export default function OnboardingPage() {
     const navigate = useNavigate();
     const { user, setAuth, token } = useAuthStore();
+    const syncPrimaryWorkspaceName = useOrgStore((state) => state.syncPrimaryWorkspaceName);
     const [orgName, setOrgName] = useState('');
     const [allowDomainJoin, setAllowDomainJoin] = useState(false);
     const [selectedUseCases, setSelectedUseCases] = useState([]);
@@ -46,9 +48,11 @@ export default function OnboardingPage() {
         };
         localStorage.setItem(`flowops_onboarding_${user?.id || 'default'}`, JSON.stringify(onboardingData));
 
-        // Update company name in local state if possible to enhance user feel
+        // Update company & workspace name cleanly without changing 'workspace-1' backend slug
+        const trimmedOrgName = orgName.trim();
+        syncPrimaryWorkspaceName(trimmedOrgName);
         if (user) {
-            const updatedUser = { ...user, company: orgName };
+            const updatedUser = { ...user, company: trimmedOrgName };
             setAuth(token, updatedUser);
         }
 

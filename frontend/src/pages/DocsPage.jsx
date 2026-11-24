@@ -135,7 +135,7 @@ function SectionFirstRequest() {
                         </button>
                         {activeTab === 'Python' && (
 <pre>
-<span className="text-purple-400">from</span> flowops <span className="text-purple-400">import</span> FlowOps{'\n\n'}
+<span className="text-red-400">from</span> flowops <span className="text-red-400">import</span> FlowOps{'\n\n'}
 client = FlowOps({'\n'}
     api_key=<span className="text-green-400">"YOUR_FLOWOPS_API_KEY"</span>,{'\n'}
     provider=<span className="text-green-400">"openai"</span>{'\n'}

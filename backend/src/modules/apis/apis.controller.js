@@ -1,42 +1,29 @@
 const { eq, and, desc, count } = require('drizzle-orm');
 const { db, apis, apiKeys, rateLimits } = require('../../config/database');
+const { sendTestSlackAlert } = require('../../gateway/core/alerts');
 const response = require('../../utils/formatResponse');
+
+const ALLOWED_UPDATE_FIELDS = [
+    'name',
+    'baseUrl',
+    'isActive',
+    'smartRoutingEnabled',
+    'routingStrategy',
+    'fallbackProviders',
+    'retryCount',
+    'loadBalancingWeights',
+    'slackWebhookUrl',
+    'errorAlertThreshold',
+    'alertWindowMinutes',
+    'costLimitAlert',
+];
 
 async function listApis(req, res, next) {
     try {
         const workspaceSlug = req.headers['x-workspace-slug'] || 'workspace-1';
-        let apiList = await db.select().from(apis)
+        const apiList = await db.select().from(apis)
             .where(and(eq(apis.userId, req.user.userId), eq(apis.workspaceSlug, workspaceSlug)))
             .orderBy(desc(apis.createdAt));
-
-        // --- TEST/DEMO SEEDING LOGIC ---
-        // If the workspace has no APIs, create some test APIs for this specific workspace
-        if (apiList.length === 0) {
-            const testApi1 = await db.insert(apis).values({
-                name: `Production Gateway (${workspaceSlug})`,
-                slug: `prod-${workspaceSlug}`,
-                baseUrl: 'https://api.openai.com',
-                userId: req.user.userId,
-                workspaceSlug: workspaceSlug,
-            }).returning();
-            
-            const testApi2 = await db.insert(apis).values({
-                name: `Staging Sandbox (${workspaceSlug})`,
-                slug: `sandbox-${workspaceSlug}`,
-                baseUrl: 'http://localhost:5000',
-                userId: req.user.userId,
-                workspaceSlug: workspaceSlug,
-            }).returning();
-
-            // Insert rate limits for them
-            await db.insert(rateLimits).values([
-                { apiId: testApi1[0].id, requestsPerMinute: 1000, requestsPerDay: 50000 },
-                { apiId: testApi2[0].id, requestsPerMinute: 100, requestsPerDay: 5000 }
-            ]);
-
-            apiList = [...testApi1, ...testApi2];
-        }
-        // --------------------------------
 
         // Attach counts and rate limits for each api
         const enriched = await Promise.all(apiList.map(async (api) => {
@@ -84,8 +71,12 @@ async function createApi(req, res, next) {
             userId: req.user.userId,
             workspaceSlug: workspaceSlug,
             fallbackProviders: req.body.fallbackProviders,
-            retryCount: req.body.retryCount ? parseInt(req.body.retryCount, 10) : undefined,
+            retryCount: req.body.retryCount !== undefined && req.body.retryCount !== null
+                ? parseInt(req.body.retryCount, 10)
+                : undefined,
             loadBalancingWeights: req.body.loadBalancingWeights,
+            smartRoutingEnabled: req.body.smartRoutingEnabled,
+            routingStrategy: req.body.routingStrategy,
             slackWebhookUrl: req.body.slackWebhookUrl,
             errorAlertThreshold: req.body.errorAlertThreshold ? parseFloat(req.body.errorAlertThreshold) : undefined,
             alertWindowMinutes: req.body.alertWindowMinutes ? parseInt(req.body.alertWindowMinutes, 10) : undefined,
@@ -105,20 +96,49 @@ async function createApi(req, res, next) {
 
 async function updateApi(req, res, next) {
     try {
-        // Verify ownership
         const [existing] = await db.select({ id: apis.id }).from(apis)
             .where(and(eq(apis.id, req.params.id), eq(apis.userId, req.user.userId)))
             .limit(1);
 
         if (!existing) return response.error(res, 'API not found', 404);
 
+        const updateData = { updatedAt: new Date() };
+        for (const field of ALLOWED_UPDATE_FIELDS) {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        }
+
         const [api] = await db.update(apis)
-            .set({ ...req.body, updatedAt: new Date() })
+            .set(updateData)
             .where(eq(apis.id, req.params.id))
             .returning();
 
         return response.success(res, { api });
     } catch (err) { next(err); }
+}
+
+async function testAlert(req, res, next) {
+    try {
+        const [api] = await db.select().from(apis)
+            .where(and(eq(apis.id, req.params.id), eq(apis.userId, req.user.userId)))
+            .limit(1);
+
+        if (!api) return response.error(res, 'API not found', 404);
+
+        const webhookUrl = (req.body?.slackWebhookUrl || api.slackWebhookUrl || '').trim();
+        if (!webhookUrl) {
+            return response.error(res, 'No Slack webhook URL configured for this route.', 400);
+        }
+
+        await sendTestSlackAlert(webhookUrl, api);
+        return response.success(res, { message: 'Test alert delivered successfully' });
+    } catch (err) {
+        if (err.message?.startsWith('Webhook returned HTTP') || err.message?.startsWith('Invalid Slack')) {
+            return response.error(res, err.message, 400);
+        }
+        next(err);
+    }
 }
 
 async function deleteApi(req, res, next) {
@@ -134,4 +154,4 @@ async function deleteApi(req, res, next) {
     } catch (err) { next(err); }
 }
 
-module.exports = { listApis, getApi, createApi, updateApi, deleteApi };
+module.exports = { listApis, getApi, createApi, updateApi, testAlert, deleteApi };

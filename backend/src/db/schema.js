@@ -1,4 +1,4 @@
-const { pgTable, uuid, varchar, text, boolean, integer, doublePrecision, timestamp, index, uniqueIndex } = require('drizzle-orm/pg-core');
+const { pgTable, uuid, varchar, text, boolean, integer, doublePrecision, timestamp, index, uniqueIndex, vector } = require('drizzle-orm/pg-core');
 
 // ─── Users ──────────────────────────────────────
 const users = pgTable('users', {
@@ -23,6 +23,8 @@ const apis = pgTable('apis', {
     fallbackProviders: varchar('fallbackProviders', { length: 255 }).default('gemini,anthropic'),
     retryCount: integer('retryCount').default(2),
     loadBalancingWeights: text('loadBalancingWeights').default('{"openai":50,"gemini":30,"anthropic":20}'),
+    smartRoutingEnabled: boolean('smartRoutingEnabled').default(false).notNull(),
+    routingStrategy: varchar('routingStrategy', { length: 30 }).default('cost-optimized').notNull(),
     slackWebhookUrl: text('slackWebhookUrl').default(''),
     errorAlertThreshold: doublePrecision('errorAlertThreshold').default(5.0),
     alertWindowMinutes: integer('alertWindowMinutes').default(5),
@@ -63,6 +65,10 @@ const requestLogs = pgTable('request_logs', {
     promptTokens: integer('promptTokens').default(0).notNull(),
     completionTokens: integer('completionTokens').default(0).notNull(),
     cacheHit: boolean('cacheHit').default(false).notNull(),
+    cacheTier: varchar('cacheTier', { length: 20 }),
+    isStreaming: boolean('isStreaming').default(false).notNull(),
+    retryAttempts: integer('retryAttempts').default(0).notNull(),
+    failoverUsed: boolean('failoverUsed').default(false).notNull(),
     provider: varchar('provider', { length: 50 }),
     model: varchar('model', { length: 100 }),
     promptOptimized: boolean('promptOptimized').default(false).notNull(),
@@ -98,6 +104,24 @@ const apiMetrics = pgTable('api_metrics', {
     index('api_metrics_apiId_minuteBucket_lookup_idx').on(table.apiId, table.minuteBucket),
 ]);
 
+// ─── Tier 2 Semantic Cache (PostgreSQL + pgvector) ─
+const semanticCache = pgTable('semantic_cache', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    apiId: uuid('apiId').references(() => apis.id, { onDelete: 'cascade' }),
+    model: varchar('model', { length: 100 }).notNull(),
+    temperature: doublePrecision('temperature').default(0).notNull(),
+    systemPromptHash: varchar('systemPromptHash', { length: 64 }).notNull(),
+    promptText: text('promptText').notNull(),
+    embedding: vector('embedding', { dimensions: 384 }).notNull(),
+    responsePayload: text('responsePayload').notNull(),
+    tokensUsed: integer('tokensUsed').default(0).notNull(),
+    expiresAt: timestamp('expiresAt', { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+    index('semantic_cache_lookup_idx').on(table.model, table.temperature, table.systemPromptHash, table.expiresAt),
+    index('semantic_cache_embedding_idx').using('hnsw', table.embedding.op('vector_cosine_ops')),
+]);
+
 module.exports = {
     users,
     apis,
@@ -105,4 +129,5 @@ module.exports = {
     requestLogs,
     rateLimits,
     apiMetrics,
+    semanticCache,
 };

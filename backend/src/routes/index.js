@@ -58,8 +58,9 @@ function registerRoutes(app) {
     app.use('/api/v1/logs', logRoutes);
     app.use('/api/v1/analytics', analyticsRoutes);
 
-    // ─── Gateway Routes (separate layer) ───
+    // ─── Gateway Routes (drop-in OpenAI /v1 + legacy /gateway prefix) ───
     app.use('/gateway', gatewayRoutes);
+    app.use('/', gatewayRoutes);
 
     // ─── 404 Handler ───
     app.use('*', (req, res) => {

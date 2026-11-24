@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Icon from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../state/authStore';
+import { analyticsService } from '../services/api';
 import { toast } from 'react-hot-toast';
 
 const timezoneByLocation = {
@@ -10,6 +12,12 @@ const timezoneByLocation = {
     US: '(UTC-08:00) Pacific Time (US and Canada) (America/Los_Angeles)',
     EU: '(UTC+01:00) Central European Time (Europe/Paris)',
     OTHER: '(UTC+00:00) Coordinated Universal Time (UTC)'
+};
+
+const TIER_QUOTA = {
+    FREE: 10000,
+    PRO: 100000,
+    MAX: 1000000,
 };
 
 export default function SettingsPage() {
@@ -22,12 +30,21 @@ export default function SettingsPage() {
     const [inviteRole, setInviteRole] = useState('admin');
     const [inviteEmail, setInviteEmail] = useState('');
 
+    const { data: overviewRes } = useQuery({
+        queryKey: ['settingsOverview'],
+        queryFn: () => analyticsService.getOverview(),
+    });
+    const usedRequests = overviewRes?.data?.totalRequests || 0;
+    const planTier = user?.subscriptionTier || 'FREE';
+    const monthlyQuota = TIER_QUOTA[planTier] || 10000;
+    const usagePercent = Math.min(100, Math.round((usedRequests / monthlyQuota) * 100));
+
     const [teamMembers, setTeamMembers] = useState(() => [{
         id: 'owner',
-        name: user?.name || 'Admin User',
-        email: user?.email || 'admin@flowops.dev',
+        name: user?.name || 'Account Owner',
+        email: user?.email || 'No email set',
         role: 'owner',
-        initials: user?.name ? user.name.charAt(0).toUpperCase() : 'A',
+        initials: user?.name ? user.name.charAt(0).toUpperCase() : 'O',
         color: 'bg-red-800'
     }]);
 
@@ -270,7 +287,7 @@ export default function SettingsPage() {
                                     </div>
                                     <button 
                                         onClick={() => setIsInviteModalOpen(true)}
-                                        className="bg-white hover:bg-neutral-200 text-black px-4 py-2 rounded font-sans font-bold text-[13px] transition-all flex items-center justify-center gap-2 w-full sm:w-auto cursor-pointer shadow-sm active:scale-95"
+                                        className="bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] px-4 py-2 rounded-lg font-sans font-bold text-[13px] transition-all hover:scale-[1.02] flex items-center justify-center gap-2 w-full sm:w-auto cursor-pointer active:scale-95"
                                     >
                                         <Icon name="person_add" className="w-4 h-4" /> Invite Member
                                     </button>
@@ -336,17 +353,19 @@ export default function SettingsPage() {
                         <div className="animate-in fade-in duration-200 space-y-6">
                             <Card className="p-8">
                                 <h2 className="text-lg font-bold text-white font-sans mb-2">Current Plan</h2>
-                                <p className="text-[13px] text-neutral-400 font-sans mb-6">You are currently on the Free Plan.</p>
+                                <p className="text-[13px] text-neutral-400 font-sans mb-6">You are currently on the {planTier} Plan.</p>
                                 <div className="border border-white/10 bg-white/5 p-6 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                     <div className="w-full">
-                                        <h3 className="text-white font-bold text-xl mb-1">Free</h3>
-                                        <p className="text-neutral-300 text-sm mb-4">10,000 requests per month included.</p>
+                                        <h3 className="text-white font-bold text-xl mb-1">{planTier}</h3>
+                                        <p className="text-neutral-300 text-sm mb-4">{monthlyQuota.toLocaleString()} requests per month included.</p>
                                         <div className="w-full bg-[#111] rounded-full h-2.5 border border-white/5 max-w-sm mb-2">
-                                            <div className="bg-white/20 h-2.5 rounded-full" style={{ width: '45%' }}></div>
+                                            <div className="bg-emerald-500/80 h-2.5 rounded-full transition-all" style={{ width: `${usagePercent}%` }}></div>
                                         </div>
-                                        <p className="text-xs text-neutral-500 font-mono">4,500 / 10,000 requests used</p>
+                                        <p className="text-xs text-neutral-500 font-mono">
+                                            {usedRequests.toLocaleString()} / {monthlyQuota.toLocaleString()} requests used
+                                        </p>
                                     </div>
-                                    <Link to="/billing/upgrade" className="bg-white hover:bg-neutral-200 text-black px-6 py-2.5 rounded font-sans font-bold text-[13px] transition-all hover:scale-[1.02] shadow-sm cursor-pointer whitespace-nowrap block">
+                                    <Link to="/billing/upgrade" className="bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] px-6 py-2.5 rounded-lg font-sans font-bold text-[13px] transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap block">
                                         Upgrade to Pro
                                     </Link>
                                 </div>
@@ -369,10 +388,10 @@ export default function SettingsPage() {
 
             {/* Invite Modal */}
             {isInviteModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-[#111] border border-white/10 rounded-xl shadow-2xl w-full max-w-[550px] overflow-hidden flex flex-col font-sans relative transform scale-100">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-[#08060a]/95 border border-[rgba(153,27,27,0.3)] rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_25px_rgba(239,68,68,0.12)] backdrop-blur-2xl w-full max-w-[550px] overflow-hidden flex flex-col font-sans relative transform scale-100">
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 pb-4">
+                        <div className="flex items-center justify-between p-6 pb-4 border-b border-[rgba(153,27,27,0.2)]">
                             <div>
                                 <h2 className="text-[16px] font-bold text-white mb-1">Add Team Member</h2>
                                 <p className="text-[13px] text-neutral-400">Invite people to collaborate in this Organisation</p>
@@ -383,20 +402,20 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Body */}
-                        <div className="p-6 pt-2 space-y-6">
+                        <div className="p-6 pt-4 space-y-6">
                             <div>
                                 <h3 className="text-[13px] font-semibold text-neutral-300 mb-3">Organisation Role</h3>
                                 <div className="flex gap-4">
                                     {/* Admin Radio */}
-                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${inviteRole === 'admin' ? 'bg-[#06242e]/40 border-cyan-500/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
+                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${inviteRole === 'admin' ? 'bg-red-950/30 border-red-500/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
                                         <div className="mt-0.5 shrink-0">
-                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'admin' ? 'border-cyan-400 bg-cyan-400' : 'border-neutral-500'}`}>
-                                                {inviteRole === 'admin' && <div className="w-1.5 h-1.5 bg-[#06242e] rounded-full"></div>}
+                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'admin' ? 'border-red-500 bg-red-500' : 'border-neutral-500'}`}>
+                                                {inviteRole === 'admin' && <div className="w-1.5 h-1.5 bg-black rounded-full"></div>}
                                             </div>
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-1.5 mb-0.5">
-                                                <Icon name="shield" className={`w-4 h-4 ${inviteRole === 'admin' ? 'text-cyan-400' : 'text-neutral-400'}`} />
+                                                <Icon name="shield" className={`w-4 h-4 ${inviteRole === 'admin' ? 'text-red-400' : 'text-neutral-400'}`} />
                                                 <span className="text-[14px] font-bold text-white">Admin</span>
                                             </div>
                                             <div className="text-[12px] text-neutral-400 leading-tight mt-1">Full access to manage the organisation</div>
@@ -405,15 +424,15 @@ export default function SettingsPage() {
                                     </label>
 
                                     {/* Member Radio */}
-                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${inviteRole === 'member' ? 'bg-[#06242e]/40 border-cyan-500/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
+                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${inviteRole === 'member' ? 'bg-red-950/30 border-red-500/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
                                         <div className="mt-0.5 shrink-0">
-                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'member' ? 'border-cyan-400 bg-cyan-400' : 'border-neutral-500'}`}>
-                                                {inviteRole === 'member' && <div className="w-1.5 h-1.5 bg-[#06242e] rounded-full"></div>}
+                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'member' ? 'border-red-500 bg-red-500' : 'border-neutral-500'}`}>
+                                                {inviteRole === 'member' && <div className="w-1.5 h-1.5 bg-black rounded-full"></div>}
                                             </div>
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-1.5 mb-0.5">
-                                                <Icon name="person" className={`w-4 h-4 ${inviteRole === 'member' ? 'text-cyan-400' : 'text-neutral-400'}`} />
+                                                <Icon name="person" className={`w-4 h-4 ${inviteRole === 'member' ? 'text-red-400' : 'text-neutral-400'}`} />
                                                 <span className="text-[14px] font-bold text-white">Member</span>
                                             </div>
                                             <div className="text-[12px] text-neutral-400 leading-tight mt-1">Access to assigned workspaces only</div>
@@ -433,12 +452,12 @@ export default function SettingsPage() {
                                             placeholder="user@example.com"
                                             value={inviteEmail}
                                             onChange={(e) => setInviteEmail(e.target.value)}
-                                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-[13px] text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                                            className="w-full bg-[#060507] border border-[rgba(153,27,27,0.3)] rounded-lg pl-9 pr-4 py-2.5 text-[13px] text-white placeholder-neutral-500 focus:outline-none focus:border-red-500/50 transition-all"
                                         />
                                     </div>
                                     <button
                                         onClick={handleSendInvite}
-                                        className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-[13px] shadow-md cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                                        className="bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] font-bold px-6 py-2.5 rounded-lg transition-all hover:scale-[1.02] text-[13px] cursor-pointer disabled:opacity-50 whitespace-nowrap"
                                     >
                                         Send Invite
                                     </button>

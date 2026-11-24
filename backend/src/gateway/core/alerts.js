@@ -1,14 +1,21 @@
 const { eq, gte, and, count } = require('drizzle-orm');
 const { db, apis, requestLogs } = require('../../config/database');
 const { redis } = require('../../config/redis');
+const { validateTargetUrl } = require('./urlValidator');
 const logger = require('../../utils/logger');
 
-// Pricing rates per 1M tokens matching our core analytics algorithm
+// Pricing rates per 1M tokens (USD)
 const MODEL_RATES = {
     'gemini-1.5-flash': 0.075,
+    'gemini-2.5-flash': 0.075,
+    'gemini-3.5-flash': 0.075,
+    'gemini-3.5-flash-lite': 0.05,
+    'gemini-3.8-flash': 0.075,
     'gpt-4o-mini': 0.150,
     'gpt-4o': 2.50,
     'anthropic/claude-3-5-sonnet': 3.00,
+    'claude-3-5-sonnet': 3.00,
+    'llama-3.3-70b-versatile': 0.59,
     'gemini': 0.075,
     'openai': 2.50,
     'anthropic': 3.00
@@ -33,15 +40,28 @@ function calculateLogCost(log) {
 /**
  * Dispatch premium, rich visual slack card to configured webhook URL.
  */
-async function postSlackAlert(webhookUrl, apiName, type, details) {
+async function postSlackAlert(webhookUrl, apiName, type, details, { rethrow = false } = {}) {
     try {
-        const isErrorRate = type === 'ERROR_RATE';
-        const color = isErrorRate ? '#FF3366' : '#FF9900';
-        const title = isErrorRate
-            ? '🚨 *FlowOps HQ Warning: High Gateway Error Rate*'
-            : '💰 *FlowOps HQ Limit: Workspace Cost-Cap Alert*';
+        const urlCheck = validateTargetUrl(webhookUrl, { allowLocal: false });
+        if (!urlCheck.valid) {
+            throw new Error(`Invalid Slack webhook URL: ${urlCheck.reason}`);
+        }
 
-        const fields = isErrorRate ? [
+        const isErrorRate = type === 'ERROR_RATE';
+        const isTest = type === 'TEST';
+        const color = isTest ? '#38bdf8' : isErrorRate ? '#FF3366' : '#FF9900';
+        const title = isTest
+            ? '✅ *FlowOps HQ Test Alert: Webhook Connected*'
+            : isErrorRate
+                ? '🚨 *FlowOps HQ Warning: High Gateway Error Rate*'
+                : '💰 *FlowOps HQ Limit: Workspace Cost-Cap Alert*';
+
+        const fields = isTest ? [
+            { title: 'API Gateway', value: `*${apiName}*`, short: true },
+            { title: 'Status', value: 'Connected & Verified', short: true },
+            { title: 'Error Threshold', value: `${details.errorAlertThreshold ?? 5}% / ${details.alertWindowMinutes ?? 5}m`, short: true },
+            { title: 'Monthly Cost Cap', value: `$${Number(details.costLimitAlert ?? 100).toFixed(2)}`, short: true }
+        ] : isErrorRate ? [
             { title: 'API Gateway', value: `*${apiName}*`, short: true },
             { title: 'Evaluation Window', value: `Last ${details.windowMinutes} Min`, short: true },
             { title: 'Current Error Rate', value: `*${details.currentRate.toFixed(2)}%*`, short: true },
@@ -58,10 +78,10 @@ async function postSlackAlert(webhookUrl, apiName, type, details) {
 
         const payload = {
             username: 'FlowOps HQ Alert Manager',
-            icon_emoji: isErrorRate ? ':alert:' : ':moneybag:',
+            icon_emoji: isTest ? ':white_check_mark:' : isErrorRate ? ':alert:' : ':moneybag:',
             attachments: [
                 {
-                    fallback: `${apiName}: ${isErrorRate ? 'Error Rate Alert' : 'Cost Cap Alert'}`,
+                    fallback: `${apiName}: ${isTest ? 'Test Alert' : isErrorRate ? 'Error Rate Alert' : 'Cost Cap Alert'}`,
                     color,
                     pretext: title,
                     fields: fields.map(f => ({ title: f.title, value: f.value, short: f.short })),
@@ -71,20 +91,37 @@ async function postSlackAlert(webhookUrl, apiName, type, details) {
             ]
         };
 
-        const res = await globalThis.fetch(webhookUrl, {
+        const res = await globalThis.fetch(urlCheck.normalizedUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) {
-            throw new Error(`Slack returned status ${res.status}`);
+            throw new Error(`Webhook returned HTTP ${res.status}`);
         }
 
         logger.info(`Slack notification sent successfully for ${apiName} (${type})`);
+        return { delivered: true };
     } catch (err) {
         logger.error('Failed to send Slack alert message', { error: err.message, apiName, type });
+        if (rethrow) throw err;
+        return { delivered: false, error: err.message };
     }
+}
+
+async function sendTestSlackAlert(webhookUrl, apiRecord) {
+    return postSlackAlert(
+        webhookUrl,
+        apiRecord?.name || 'Gateway Route',
+        'TEST',
+        {
+            errorAlertThreshold: apiRecord?.errorAlertThreshold,
+            alertWindowMinutes: apiRecord?.alertWindowMinutes,
+            costLimitAlert: apiRecord?.costLimitAlert,
+        },
+        { rethrow: true }
+    );
 }
 
 /**
@@ -183,4 +220,4 @@ async function checkAndTriggerAlerts(apiId) {
     }
 }
 
-module.exports = { checkAndTriggerAlerts };
+module.exports = { checkAndTriggerAlerts, sendTestSlackAlert, MODEL_RATES };

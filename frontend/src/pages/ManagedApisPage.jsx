@@ -24,15 +24,15 @@ export default function ManagedApisPage() {
 
     // Initial states loaded from orgStore (source of truth) or localstorage
     const [workspaceName, setWorkspaceName] = useState(activeOrg?.name || 'My Workspace');
-    const [workspaceLogo, setWorkspaceLogo] = useState(savedOnboarding?.logo || '🦄');
+    const [workspaceLogo, setWorkspaceLogo] = useState(savedOnboarding?.logo || '🚀');
     const [description, setDescription] = useState(savedOnboarding?.description || '');
-    const [metadata, setMetadata] = useState(savedOnboarding?.metadata || '{\n  "project": "sample project"\n}');
+    const [metadata, setMetadata] = useState(savedOnboarding?.metadata || '{\n  "environment": "production"\n}');
     const [inputGuardrail, setInputGuardrail] = useState(savedOnboarding?.inputGuardrail || '');
     const [outputGuardrail, setOutputGuardrail] = useState(savedOnboarding?.outputGuardrail || '');
 
-    const workspaceSlug = savedOnboarding?.slug || `ws-shared-${user?.id?.substring(0, 6) || '4ba976'}`;
+    const workspaceSlug = activeOrg?.slug || 'workspace-1';
 
-    const displayName = user?.name || 'Black Panther';
+    const displayName = user?.name || 'Developer';
     const displayInitial = displayName.charAt(0).toUpperCase();
 
     const handleUpdate = (e) => {
@@ -203,7 +203,7 @@ export default function ManagedApisPage() {
                     )}
 
                     {activeTab === 'guardrails' && (
-                        <Card className="p-6 space-y-6 border border-white/5 bg-white/2">
+                        <Card className="p-6 space-y-6">
                             <div>
                                 <h2 className="text-[15px] font-bold text-white font-sans">Workspace Guardrails</h2>
                                 <p className="text-[12.5px] text-neutral-400 font-sans mt-0.5 leading-normal">
@@ -212,7 +212,7 @@ export default function ManagedApisPage() {
                             </div>
 
                             {/* Input Guardrail Selection */}
-                            <div className="p-4 border border-white/5 rounded-lg bg-white/2 space-y-4">
+                            <div className="p-4 border border-[var(--theme-border)] rounded-xl bg-[var(--theme-bg-surface)] space-y-4">
                                 <div className="space-y-1">
                                     <h3 className="text-[13px] font-bold text-white font-sans">Input Guardrail</h3>
                                     <p className="text-[11.5px] text-neutral-400 font-sans leading-relaxed">
@@ -225,12 +225,12 @@ export default function ManagedApisPage() {
                                         <select 
                                             value={inputGuardrail}
                                             onChange={(e) => setInputGuardrail(e.target.value)}
-                                            className="w-full bg-[#111111]/45 border border-white/5 rounded px-3 py-2 text-[13px] font-sans font-medium text-white appearance-none pr-10 focus:outline-none focus:border-white/20 cursor-pointer"
+                                            className="w-full bg-[#060507] border border-[rgba(153,27,27,0.3)] rounded-lg px-3 py-2 text-[13px] font-sans font-medium text-white appearance-none pr-10 focus:outline-none focus:border-red-500/50 cursor-pointer"
                                         >
-                                            <option value="" className="bg-[#111111]">Select</option>
-                                            <option value="pii-redaction" className="bg-[#111111]">Redact PII & Sensitive Info</option>
-                                            <option value="toxic-jailbreak" className="bg-[#111111]">Block Toxic Prompts & Jailbreaks</option>
-                                            <option value="compliance" className="bg-[#111111]">Enforce Compliance Check</option>
+                                            <option value="" className="bg-[#08060a]">Select</option>
+                                            <option value="pii-redaction" className="bg-[#08060a]">Redact PII & Sensitive Info</option>
+                                            <option value="toxic-jailbreak" className="bg-[#08060a]">Block Toxic Prompts & Jailbreaks</option>
+                                            <option value="compliance" className="bg-[#08060a]">Enforce Compliance Check</option>
                                         </select>
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
                                             <Icon name="unfold_more" className="w-3.5 h-3.5"  />
@@ -240,7 +240,7 @@ export default function ManagedApisPage() {
                             </div>
 
                             {/* Output Guardrail Selection */}
-                            <div className="p-4 border border-white/5 rounded-lg bg-white/2 space-y-4">
+                            <div className="p-4 border border-[var(--theme-border)] rounded-xl bg-[var(--theme-bg-surface)] space-y-4">
                                 <div className="space-y-1">
                                     <h3 className="text-[13px] font-bold text-white font-sans">Output Guardrail</h3>
                                     <p className="text-[11.5px] text-neutral-400 font-sans leading-relaxed">
@@ -253,12 +253,12 @@ export default function ManagedApisPage() {
                                         <select 
                                             value={outputGuardrail}
                                             onChange={(e) => setOutputGuardrail(e.target.value)}
-                                            className="w-full bg-[#111111]/45 border border-white/5 rounded px-3 py-2 text-[13px] font-sans font-medium text-white appearance-none pr-10 focus:outline-none focus:border-white/20 cursor-pointer"
+                                            className="w-full bg-[#060507] border border-[rgba(153,27,27,0.3)] rounded-lg px-3 py-2 text-[13px] font-sans font-medium text-white appearance-none pr-10 focus:outline-none focus:border-red-500/50 cursor-pointer"
                                         >
-                                            <option value="" className="bg-[#111111]">Select</option>
-                                            <option value="toxic-hallucination" className="bg-[#111111]">Block Toxic Outputs & Hallucinations</option>
-                                            <option value="pii-sanitization" className="bg-[#111111]">PII Sanitization</option>
-                                            <option value="brand-guidelines" className="bg-[#111111]">Brand Guidelines Check</option>
+                                            <option value="" className="bg-[#08060a]">Select</option>
+                                            <option value="toxic-hallucination" className="bg-[#08060a]">Block Toxic Outputs & Hallucinations</option>
+                                            <option value="pii-sanitization" className="bg-[#08060a]">PII Sanitization</option>
+                                            <option value="brand-guidelines" className="bg-[#08060a]">Brand Guidelines Check</option>
                                         </select>
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
                                             <Icon name="unfold_more" className="w-3.5 h-3.5"  />
@@ -273,7 +273,7 @@ export default function ManagedApisPage() {
                     <div className="flex justify-end pt-2">
                         <button
                             onClick={handleUpdate}
-                            className="px-6 py-2 bg-[#1C1C1F] border border-white/5 hover:border-white/10 text-neutral-400 hover:text-white rounded font-sans font-semibold text-[13px] transition-all shadow-sm cursor-pointer active:scale-[0.98]"
+                            className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] rounded-lg font-sans font-bold text-[13px] transition-all hover:scale-[1.02] cursor-pointer active:scale-[0.98]"
                         >
                             Update
                         </button>
@@ -282,7 +282,7 @@ export default function ManagedApisPage() {
 
                 {/* Right More Details Column */}
                 <div className="lg:col-span-3 space-y-6">
-                    <Card className="p-6 border border-white/5 bg-white/2 flex flex-col space-y-6">
+                    <Card className="p-6 flex flex-col space-y-6">
                         <div>
                             <h3 className="text-[14px] font-bold text-white font-sans">More Details</h3>
                         </div>
@@ -338,7 +338,7 @@ export default function ManagedApisPage() {
                         <div className="space-y-1 text-[11.5px] font-sans">
                             <h4 className="font-bold text-white leading-normal">Need Help?</h4>
                             <p className="text-neutral-400 leading-relaxed">
-                                Need help or facing issues? Our <a href="#/support" className="text-indigo-400 hover:text-indigo-350 transition-colors font-semibold">support team</a> is here to help.
+                                Need help or facing issues? Our <a href="#/support" className="text-cyan-400 hover:text-cyan-300 transition-colors font-semibold">support team</a> is here to help.
                             </p>
                         </div>
                     </Card>
