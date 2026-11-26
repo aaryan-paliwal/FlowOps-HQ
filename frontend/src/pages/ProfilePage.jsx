@@ -59,7 +59,7 @@ export default function ProfilePage() {
                         </div>
                         <h2 className="text-lg font-bold text-white font-sans">{displayName}</h2>
                         <p className="text-[13px] text-neutral-400 font-sans">{user?.email || 'No email available'}</p>
-                        <span className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-cyan-950/20 text-cyan-400 border border-cyan-500/10">
+                        <span className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/20">
                             {user?.subscriptionTier || 'FREE'} Developer
                         </span>
                     </Card>

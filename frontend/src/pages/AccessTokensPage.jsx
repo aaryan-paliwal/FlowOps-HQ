@@ -341,7 +341,7 @@ export default function AccessTokensPage() {
                                         ))}
                                     </select>
                                     {apisList.length === 0 && !apisLoading && (
-                                        <p className="text-[11.5px] text-cyan-400 font-sans font-semibold flex items-center gap-1 mt-1">
+                                        <p className="text-[11.5px] text-[#CBFF2E] font-sans font-semibold flex items-center gap-1 mt-1">
                                             <Icon name="info" className="w-3.5 h-3.5"  />
                                             Please configure a route context on the AI Gateways page first!
                                         </p>

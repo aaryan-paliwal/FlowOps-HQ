@@ -16,7 +16,7 @@ const PROVIDER_OPTIONS = [
         short: 'Smart Auto',
         defaultModel: 'flowops-smart',
         badge: 'Recommended',
-        pillClass: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
+        pillClass: 'text-[#CBFF2E] border-[#CBFF2E]/30 bg-[#CBFF2E]/10',
         description: 'Auto-classifies prompt complexity and routes across available providers.',
     },
     {
@@ -25,7 +25,7 @@ const PROVIDER_OPTIONS = [
         short: 'Gemini',
         defaultModel: 'gemini-3.5-flash',
         badge: 'Free Vault Ready',
-        pillClass: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
+        pillClass: 'text-[#CBFF2E] border-[#CBFF2E]/30 bg-[#CBFF2E]/10',
         description: 'Uses BYOK x-gemini-key or server GEMINI_API_KEY fallback.',
     },
     {
@@ -52,7 +52,7 @@ const PROVIDER_OPTIONS = [
         short: 'Custom / OSS',
         defaultModel: 'llama-3.3-70b-versatile',
         badge: 'Universal URL',
-        pillClass: 'text-cyan-300 border-cyan-500/30 bg-cyan-950/20',
+        pillClass: 'text-[#CBFF2E] border-[#CBFF2E]/30 bg-[#CBFF2E]/10',
         description: 'Calls any OpenAI-compatible HTTP endpoint with SSRF validation.',
     },
 ];
@@ -517,7 +517,7 @@ ${bashHeaderFlags}
             <div className="p-6 border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white/[0.015]">
                 <div>
                     <div className="flex items-center gap-2.5">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-[12px] font-mono font-bold">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#CBFF2E]/15 border border-[#CBFF2E]/30 text-[#CBFF2E] text-[12px] font-mono font-bold">
                             1
                         </span>
                         <p className="text-[16px] font-bold text-white font-sans">
@@ -570,7 +570,7 @@ ${bashHeaderFlags}
                                     type="button"
                                     disabled={createTestKeyMutation.isPending}
                                     onClick={() => createTestKeyMutation.mutate(activeRoute.id)}
-                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer disabled:opacity-50"
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#CBFF2E] hover:text-[#d6ff54] cursor-pointer disabled:opacity-50"
                                 >
                                     {createTestKeyMutation.isPending ? (
                                         <Icon name="autorenew" className="w-3.5 h-3.5 animate-spin" />
@@ -586,7 +586,7 @@ ${bashHeaderFlags}
                             <select
                                 value={activeRoute?.id || ''}
                                 onChange={(e) => onSelectRoute?.(e.target.value)}
-                                className="w-full bg-[#121212] border border-white/10 rounded-lg px-3 py-2 text-[12px] font-sans text-white focus:outline-none focus:border-cyan-400/50 cursor-pointer"
+                                className="w-full bg-[#121212] border border-white/10 rounded-lg px-3 py-2 text-[12px] font-sans text-white focus:outline-none focus:border-[#CBFF2E]/60 cursor-pointer"
                                 aria-label="Playground Target Route"
                             >
                                 {apisList.map((route) => (
@@ -608,7 +608,7 @@ ${bashHeaderFlags}
                                     }
                                 }}
                                 placeholder="flw_... (click '1-Click Create Test Key' above)"
-                                className="w-full bg-[#121212] border border-white/10 rounded-lg pl-3 pr-10 py-2 text-[12px] font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50"
+                                className="w-full bg-[#121212] border border-white/10 rounded-lg pl-3 pr-10 py-2 text-[12px] font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#CBFF2E]/60"
                             />
                             <button
                                 type="button"
@@ -697,7 +697,7 @@ ${bashHeaderFlags}
                             rows={3}
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
-                            className="w-full bg-[#121212] border border-white/10 rounded-lg p-3 text-[12px] font-sans text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50 resize-y"
+                            className="w-full bg-[#121212] border border-white/10 rounded-lg p-3 text-[12px] font-sans text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#CBFF2E]/60 resize-y"
                             placeholder="Ask a question to test live gateway routing..."
                         />
                     </div>
@@ -765,7 +765,7 @@ ${bashHeaderFlags}
                         >
                             <div className="pr-3">
                                 <span className="text-[12px] font-bold text-white font-sans flex items-center gap-1.5">
-                                    <Icon name="auto_awesome" className="w-3.5 h-3.5 text-cyan-400" />
+                                    <Icon name="auto_awesome" className="w-3.5 h-3.5 text-[#CBFF2E]" />
                                     Force Smart Classifier Header
                                 </span>
                                 <span className="text-[11px] text-neutral-400 font-sans block mt-0.5">
@@ -777,7 +777,7 @@ ${bashHeaderFlags}
                                 disabled={simulateOutage}
                                 checked={!simulateOutage && forceSmartRouting}
                                 onChange={(e) => setForceSmartRouting(e.target.checked)}
-                                className="w-4 h-4 accent-cyan-400 cursor-pointer"
+                                className="w-4 h-4 accent-[#CBFF2E] cursor-pointer"
                             />
                         </label>
                     </div>
@@ -833,7 +833,7 @@ ${bashHeaderFlags}
                             <button
                                 type="button"
                                 onClick={() => setActiveModal('provider')}
-                                className="px-2.5 py-1 rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-[11px] font-mono cursor-pointer hover:bg-cyan-500/20"
+                                className="px-2.5 py-1 rounded border border-[#CBFF2E]/30 bg-[#CBFF2E]/10 text-[#CBFF2E] text-[11px] font-mono cursor-pointer hover:bg-[#CBFF2E]/20"
                                 title="Click to switch target provider/model"
                             >
                                 model: {requestSpec.effectiveModel}
@@ -861,7 +861,7 @@ ${bashHeaderFlags}
                         {!testResult ? (
                             <div className="rounded-lg border border-dashed border-white/10 bg-white/[0.015] p-6 text-center space-y-1.5">
                                 <p className="text-[13px] font-bold text-neutral-200 font-sans">
-                                    Ready to execute against <span className="font-mono text-cyan-400">{requestSpec.endpoint}</span>
+                                    Ready to execute against <span className="font-mono text-[#CBFF2E]">{requestSpec.endpoint}</span>
                                 </p>
                                 <p className="text-[12px] text-neutral-500 font-sans">
                                     Click <strong className="text-neutral-300">Test Request Now</strong> to inspect the real LLM completion, classifier tier, selected provider, and failover headers.
@@ -890,12 +890,12 @@ ${bashHeaderFlags}
                                             </span>
                                         )}
                                         {testResult.telemetry.provider && (
-                                            <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-[11px] font-mono text-cyan-300">
+                                            <span className="px-2 py-0.5 rounded bg-[#CBFF2E]/10 border border-[#CBFF2E]/25 text-[11px] font-mono text-[#CBFF2E]">
                                                 provider: {testResult.telemetry.provider}
                                             </span>
                                         )}
                                         {testResult.telemetry.modelSelected && (
-                                            <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-[11px] font-mono text-cyan-300">
+                                            <span className="px-2 py-0.5 rounded bg-[#CBFF2E]/10 border border-[#CBFF2E]/25 text-[11px] font-mono text-[#CBFF2E]">
                                                 model: {testResult.telemetry.modelSelected}
                                             </span>
                                         )}
@@ -936,7 +936,7 @@ ${bashHeaderFlags}
                                 </div>
 
                                 {testResult.telemetry.routerReason && (
-                                    <div className="px-3 py-2 rounded-lg bg-cyan-500/5 border border-cyan-500/20 text-[11px] font-mono text-cyan-300">
+                                    <div className="px-3 py-2 rounded-lg bg-[#CBFF2E]/5 border border-[#CBFF2E]/20 text-[11px] font-mono text-[#CBFF2E]">
                                         x-flowops-router-reason: {testResult.telemetry.routerReason}
                                     </div>
                                 )}
@@ -1004,7 +1004,7 @@ ${bashHeaderFlags}
                                             }}
                                             className={`w-full text-left p-3.5 rounded-lg border transition-all cursor-pointer flex items-start justify-between gap-3 ${
                                                 selected
-                                                    ? 'border-cyan-500/50 bg-cyan-500/10'
+                                                    ? 'border-[#CBFF2E]/50 bg-[#CBFF2E]/10'
                                                     : 'border-white/10 bg-[#151515] hover:border-white/25'
                                             }`}
                                         >
@@ -1017,7 +1017,7 @@ ${bashHeaderFlags}
                                                 </div>
                                                 <p className="text-[12px] text-neutral-400 font-sans mt-1">{opt.description}</p>
                                             </div>
-                                            {selected && <Icon name="check_circle" className="w-5 h-5 text-cyan-400 shrink-0" />}
+                                            {selected && <Icon name="check_circle" className="w-5 h-5 text-[#CBFF2E] shrink-0" />}
                                         </button>
                                     );
                                 })}
@@ -1036,7 +1036,7 @@ ${bashHeaderFlags}
                                             value={credsDraft.openaiKey}
                                             onChange={(e) => setCredsDraft((p) => ({ ...p, openaiKey: e.target.value }))}
                                             placeholder="sk-..."
-                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-[#CBFF2E]/60"
                                         />
                                     </div>
                                     <div>
@@ -1046,7 +1046,7 @@ ${bashHeaderFlags}
                                             value={credsDraft.geminiKey}
                                             onChange={(e) => setCredsDraft((p) => ({ ...p, geminiKey: e.target.value }))}
                                             placeholder="AIza... (optional)"
-                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-[#CBFF2E]/60"
                                         />
                                     </div>
                                     <div>
@@ -1056,7 +1056,7 @@ ${bashHeaderFlags}
                                             value={credsDraft.anthropicKey}
                                             onChange={(e) => setCredsDraft((p) => ({ ...p, anthropicKey: e.target.value }))}
                                             placeholder="sk-ant-..."
-                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-[#CBFF2E]/60"
                                         />
                                     </div>
                                     <div>
@@ -1067,13 +1067,13 @@ ${bashHeaderFlags}
                                             max={4096}
                                             value={credsDraft.maxTokens}
                                             onChange={(e) => setCredsDraft((p) => ({ ...p, maxTokens: Number(e.target.value) || 500 }))}
-                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-[#CBFF2E]/60"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="pt-2 border-t border-white/5 space-y-3">
-                                    <p className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider font-sans">
+                                    <p className="text-[11px] font-bold text-[#CBFF2E] uppercase tracking-wider font-sans">
                                         OpenAI-Compatible / Open-Source Settings (Groq, Ollama, vLLM)
                                     </p>
                                     <div>
@@ -1083,7 +1083,7 @@ ${bashHeaderFlags}
                                             value={credsDraft.targetUrl}
                                             onChange={(e) => setCredsDraft((p) => ({ ...p, targetUrl: e.target.value }))}
                                             placeholder="https://api.groq.com/openai/v1 or http://localhost:11434/v1"
-                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                                            className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-[#CBFF2E]/60"
                                         />
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1094,7 +1094,7 @@ ${bashHeaderFlags}
                                                 value={credsDraft.customModel}
                                                 onChange={(e) => setCredsDraft((p) => ({ ...p, customModel: e.target.value }))}
                                                 placeholder="llama-3.3-70b-versatile"
-                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-[#CBFF2E]/60"
                                             />
                                         </div>
                                         <div>
@@ -1104,7 +1104,7 @@ ${bashHeaderFlags}
                                                 value={credsDraft.customKey}
                                                 onChange={(e) => setCredsDraft((p) => ({ ...p, customKey: e.target.value }))}
                                                 placeholder="gsk_... or optional for Ollama"
-                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded px-3 py-2 text-[12px] font-mono text-white focus:outline-none focus:border-[#CBFF2E]/60"
                                             />
                                         </div>
                                     </div>

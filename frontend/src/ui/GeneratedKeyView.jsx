@@ -139,7 +139,7 @@ console.log(response.choices[0].message.content);`,
 
                 <div className="bg-[#060507] border border-[rgba(153,27,27,0.3)] rounded-xl p-2 flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="flex-1 min-w-0 flex items-center gap-2 bg-black/60 border border-[rgba(153,27,27,0.2)] rounded-lg px-3 py-2.5">
-                        <Icon name="key" className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <Icon name="key" className="w-4 h-4 text-[#CBFF2E] shrink-0" />
                         <span className="flex-1 min-w-0 font-mono text-[13px] text-white overflow-x-auto whitespace-nowrap select-all">
                             {isKeyVisible ? rawKey : maskedDisplay}
                         </span>
@@ -159,8 +159,8 @@ console.log(response.choices[0].message.content);`,
                         onClick={() => copyText(rawKey, 'key', 'API key copied to clipboard!')}
                         className={`px-4 py-2.5 rounded-lg font-sans font-bold text-[12.5px] transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-sm hover:scale-[1.02] ${
                             copiedTarget === 'key'
-                                ? 'bg-cyan-500 text-black shadow-[0_0_12px_#06b6d4]'
-                                : 'bg-cyan-400 text-black hover:bg-cyan-300'
+                                ? 'bg-[#CBFF2E] text-black shadow-[0_0_12px_#CBFF2E]'
+                                : 'bg-[#CBFF2E] text-black hover:bg-[#b8ea25]'
                         }`}
                     >
                         <Icon
@@ -176,7 +176,7 @@ console.log(response.choices[0].message.content);`,
             <div className="space-y-2 border-t border-[rgba(153,27,27,0.2)] pt-4">
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-[12.5px] font-semibold text-neutral-200 font-sans">
-                        <Icon name="terminal" className="w-4 h-4 text-cyan-400" />
+                        <Icon name="terminal" className="w-4 h-4 text-[#CBFF2E]" />
                         <span>Quickstart Code</span>
                     </div>
                     <span className="text-[11.5px] font-mono text-neutral-400">
@@ -231,7 +231,7 @@ console.log(response.choices[0].message.content);`,
             {/* Footer Action */}
             <div className="pt-2 border-t border-[rgba(153,27,27,0.2)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span className="text-[11.5px] font-sans text-neutral-400">
-                    Need to test multiple customer providers? Pass <code className="font-mono text-cyan-400">x-openai-key</code>, <code className="font-mono text-cyan-400">x-gemini-key</code>, or <code className="font-mono text-cyan-400">x-custom-key</code> headers.
+                    Need to test multiple customer providers? Pass <code className="font-mono text-[#CBFF2E]">x-openai-key</code>, <code className="font-mono text-[#CBFF2E]">x-gemini-key</code>, or <code className="font-mono text-[#CBFF2E]">x-custom-key</code> headers.
                 </span>
                 <button
                     type="button"

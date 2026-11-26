@@ -452,11 +452,11 @@ export default function AnalyticsPage() {
                                 onClick={() => setActiveSubtab(tab.id)}
                                 className={`flex items-center gap-2 px-3 pb-3 pt-0.5 text-xs font-semibold border-b-2 transition-all cursor-pointer relative top-[1px] ${
                                     active 
-                                        ? 'border-[#06B6D4] text-white font-bold' 
+                                        ? 'border-[#CBFF2E] text-white font-bold' 
                                         : 'border-transparent text-neutral-455 hover:text-white'
                                 }`}
                             >
-                                <Icon name={tab.icon} className={`w-3.5 h-3.5 ${active ? 'text-[#06B6D4]' : 'text-neutral-455'}`} />
+                                <Icon name={tab.icon} className={`w-3.5 h-3.5 ${active ? 'text-[#CBFF2E]' : 'text-neutral-455'}`} />
                                 <span>{tab.label}</span>
                             </button>
                         );
@@ -478,10 +478,10 @@ export default function AnalyticsPage() {
                         <div className="relative shrink-0 animate-in fade-in duration-200" ref={summaryFilterRef}>
                             <button
                                 onClick={() => setIsSummaryFilterOpen(!isSummaryFilterOpen)}
-                                className="flex items-center justify-between gap-2 px-3 py-1.5 bg-[#0C0C0C]/40 border border-[#06B6D4] rounded-lg text-xs font-sans text-white hover:border-[#06B6D4]/80 transition-colors cursor-pointer select-none font-semibold min-w-[110px] focus:outline-none"
+                                className="flex items-center justify-between gap-2 px-3 py-1.5 bg-[#0C0C0C]/40 border border-[#CBFF2E] rounded-lg text-xs font-sans text-white hover:border-[#CBFF2E]/80 transition-colors cursor-pointer select-none font-semibold min-w-[110px] focus:outline-none"
                             >
                                 <span>{summaryFilter}</span>
-                                <Icon name="unfold_more" className="w-3.5 h-3.5 text-[#06B6D4]"  />
+                                <Icon name="unfold_more" className="w-3.5 h-3.5 text-[#CBFF2E]"  />
                             </button>
                             {isSummaryFilterOpen && (
                                 <div className="absolute left-0 mt-1.5 w-40 bg-[#111111] border border-white/10 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-30 p-1 font-sans">
@@ -559,15 +559,15 @@ export default function AnalyticsPage() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">Tier 1 Exact Hits (Redis)</span>
-                            <span className="text-xl font-bold text-cyan-400 font-mono mt-1 block">{overview?.exactCacheHits ?? 0}</span>
+                            <span className="text-xl font-bold text-[#CBFF2E] font-mono mt-1 block">{overview?.exactCacheHits ?? 0}</span>
                         </div>
                         <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">Tier 2 Semantic Hits (pgvector)</span>
-                            <span className="text-xl font-bold text-cyan-300 font-mono mt-1 block">{overview?.semanticCacheHits ?? 0}</span>
+                            <span className="text-xl font-bold text-[#CBFF2E] font-mono mt-1 block">{overview?.semanticCacheHits ?? 0}</span>
                         </div>
                         <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">SSE Streamed Requests</span>
-                            <span className="text-xl font-bold text-cyan-400 font-mono mt-1 block">{overview?.streamingRequests ?? 0}</span>
+                            <span className="text-xl font-bold text-[#CBFF2E] font-mono mt-1 block">{overview?.streamingRequests ?? 0}</span>
                         </div>
                         <div className="bg-[var(--theme-bg-card)] border border-[var(--theme-border)] rounded-xl p-4 backdrop-blur-md">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans block">Failovers / Retries</span>
@@ -1188,7 +1188,7 @@ export default function AnalyticsPage() {
                                             domain={[0, 'auto']}
                                         />
                                         <Tooltip contentStyle={{ background: '#111111', border: '1px solid rgba(255,255,255,0.05)', color: '#FFF', fontSize: 10, borderRadius: 8 }} />
-                                        <Line type="monotone" dataKey="value" stroke="#06B6D4" strokeWidth={1.5} dot={false} />
+                                        <Line type="monotone" dataKey="value" stroke="#CBFF2E" strokeWidth={1.5} dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
@@ -1228,12 +1228,12 @@ export default function AnalyticsPage() {
                                             <path 
                                                 d={speedupPath}
                                                 fill="none" 
-                                                stroke="#06B6D4" 
+                                                stroke="#CBFF2E" 
                                                 strokeWidth="16" 
                                                 strokeLinecap="round" 
                                             />
                                         </svg>
-                                        <span className="text-xl font-bold text-[#06B6D4] mt-2 font-mono">{cacheSpeedupPct}%</span>
+                                        <span className="text-xl font-bold text-[#CBFF2E] mt-2 font-mono">{cacheSpeedupPct}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -1268,7 +1268,7 @@ export default function AnalyticsPage() {
                                             domain={[0, 100]}
                                         />
                                         <Tooltip contentStyle={{ background: '#111111', border: '1px solid rgba(255,255,255,0.05)', color: '#FFF', fontSize: 10, borderRadius: 8 }} />
-                                        <Line type="monotone" dataKey="value" stroke="#06B6D4" strokeWidth={1.5} dot={false} />
+                                        <Line type="monotone" dataKey="value" stroke="#CBFF2E" strokeWidth={1.5} dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
@@ -1300,7 +1300,7 @@ export default function AnalyticsPage() {
                                             domain={[0, 'auto']}
                                         />
                                         <Tooltip contentStyle={{ background: '#111111', border: '1px solid rgba(255,255,255,0.05)', color: '#FFF', fontSize: 10, borderRadius: 8 }} />
-                                        <Line type="monotone" dataKey="value" stroke="#06B6D4" strokeWidth={1.5} dot={false} />
+                                        <Line type="monotone" dataKey="value" stroke="#CBFF2E" strokeWidth={1.5} dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
@@ -1331,7 +1331,7 @@ export default function AnalyticsPage() {
                                     <tbody className="divide-y divide-white/5">
                                         {cacheMetrics.recentEntries.map((entry) => (
                                             <tr key={entry.id} className="hover:bg-white/[0.01]">
-                                                <td className="py-2 pr-4 font-mono text-cyan-300">{entry.model}</td>
+                                                <td className="py-2 pr-4 font-mono text-[#CBFF2E]">{entry.model}</td>
                                                 <td className="py-2 pr-4 text-neutral-200 max-w-md truncate">{entry.promptText}</td>
                                                 <td className="py-2 pr-4 text-right font-mono text-neutral-355">{entry.tokensUsed}</td>
                                                 <td className="py-2 text-right font-mono text-neutral-500">
@@ -1489,7 +1489,7 @@ export default function AnalyticsPage() {
                                     </div>
                                     <div className="h-1.5 w-full bg-[#111] rounded-full overflow-hidden">
                                         <div 
-                                            className="h-full bg-[#06B6D4] rounded-full transition-all duration-500" 
+                                            className="h-full bg-[#CBFF2E] rounded-full transition-all duration-500" 
                                             style={{ width: `${feedbackMetrics ? (feedbackMetrics.positiveCount / (feedbackMetrics.positiveCount + feedbackMetrics.neutralCount + feedbackMetrics.negativeCount || 1)) * 100 : 0}%` }}
                                         />
                                     </div>
@@ -1545,7 +1545,7 @@ export default function AnalyticsPage() {
                                             domain={[0, 'auto']}
                                         />
                                         <Tooltip contentStyle={{ background: '#111111', border: '1px solid rgba(255,255,255,0.05)', color: '#FFF', fontSize: 10, borderRadius: 8 }} />
-                                        <Line type="monotone" dataKey="value" stroke="#06B6D4" strokeWidth={1.5} dot={false} />
+                                        <Line type="monotone" dataKey="value" stroke="#CBFF2E" strokeWidth={1.5} dot={false} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
@@ -1616,7 +1616,7 @@ export default function AnalyticsPage() {
                                             <td className="px-6 py-3.5 text-right font-sans text-neutral-200">{item.requests.toLocaleString()}</td>
                                             <td className="px-6 py-3.5 text-right font-mono text-neutral-400">{item.avgLatency}ms</td>
                                             <td className="px-6 py-3.5 text-right font-mono text-neutral-400">{item.tokens.toLocaleString()}</td>
-                                            <td className="px-6 py-3.5 text-right font-mono text-cyan-400">
+                                            <td className="px-6 py-3.5 text-right font-mono text-[#CBFF2E]">
                                                 {formatAmount(item.cost || 0, 4)}
                                             </td>
                                         </tr>
@@ -1651,7 +1651,7 @@ export default function AnalyticsPage() {
                                 <>
                                     <Card className="bg-[#0C0C0C] border border-white/5 rounded-xl p-4">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Icon name="auto_awesome" className="w-3.5 h-3.5 text-cyan-400"  />
+                                            <Icon name="auto_awesome" className="w-3.5 h-3.5 text-[#CBFF2E]"  />
                                             <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Tokens Saved</span>
                                         </div>
                                         <p className="text-2xl font-bold text-white font-mono">{totalTokensSaved.toLocaleString()}</p>
@@ -1659,7 +1659,7 @@ export default function AnalyticsPage() {
                                     </Card>
                                     <Card className="bg-[#0C0C0C] border border-white/5 rounded-xl p-4">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Icon name="bolt" className="w-3.5 h-3.5 text-cyan-400"  />
+                                            <Icon name="bolt" className="w-3.5 h-3.5 text-[#CBFF2E]"  />
                                             <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Avg Compression</span>
                                         </div>
                                         <p className="text-2xl font-bold text-white font-mono">{avgOptPercent}%</p>
@@ -1731,7 +1731,7 @@ export default function AnalyticsPage() {
                                                     </td>
                                                     <td className="px-5 py-3 text-center">
                                                         {log.promptOptimized ? (
-                                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-950/50 text-cyan-300 border border-cyan-500/25">OPTIMIZED</span>
+                                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25">OPTIMIZED</span>
                                                         ) : (
                                                             <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-neutral-900 text-neutral-500 border border-white/5">PASSTHROUGH</span>
                                                         )}

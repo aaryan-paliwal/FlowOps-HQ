@@ -4,16 +4,16 @@ export const THEMES = [
     {
         id: 'cyber-edge',
         name: 'Cyber-Edge',
-        tagline: 'Obsidian Glow & Cyan Accent',
-        description: 'Linear & Raycast-inspired developer tool aesthetic. Deep obsidian surface with electric cyan and emerald active glows.',
+        tagline: 'Obsidian Glow & Laser Lime Accent',
+        description: 'Linear & Raycast-inspired developer tool aesthetic. Deep obsidian surface with electric laser lime and emerald active glows.',
         badge: 'Default',
-        primaryColor: '#06b6d4',      // Cyan 500
+        primaryColor: '#CBFF2E',      // Laser Lime
         secondaryColor: '#10b981',    // Emerald 500
         bgBody: '#070709',
         bgCard: '#0d0e12',
         borderColor: 'rgba(255, 255, 255, 0.08)',
-        activeBorder: '#06b6d4',
-        accentGlow: 'rgba(6, 182, 212, 0.35)',
+        activeBorder: '#CBFF2E',
+        accentGlow: 'rgba(203, 255, 46, 0.35)',
         fontLabel: 'Hanken Grotesk',
         previewTags: ['AI Gateway', 'Edge Proxy', 'Sub-1ms'],
     },
@@ -52,19 +52,19 @@ export const THEMES = [
     {
         id: 'aurora-glass',
         name: 'Aurora Glass (Crimson Obsidian)',
-        tagline: 'Obsidian Black, Dual Crimson & Cyber Cyan',
-        description: 'Raycast & macOS Pro frosted glassmorphism. Deep obsidian black glass canvas with dual-shade wine/crimson glow and complementary electric cyan telemetry.',
+        tagline: 'Obsidian Black, Dual Crimson & Laser Lime',
+        description: 'Raycast & macOS Pro frosted glassmorphism. Deep obsidian black glass canvas with dual-shade wine/crimson glow and complementary laser lime telemetry.',
         badge: 'Default',
         primaryColor: '#ef4444',      // Electric Crimson Red
         secondaryColor: '#991b1b',    // Deep Wine / Ruby Red
-        complementaryColor: '#06b6d4', // Cyber Cyan (complementary to red)
+        complementaryColor: '#CBFF2E', // Laser Lime (complementary to red)
         bgBody: '#060507',            // Pitch Black
         bgCard: 'rgba(16, 10, 14, 0.72)',
         borderColor: 'rgba(153, 27, 27, 0.32)',
         activeBorder: '#ef4444',
         accentGlow: 'rgba(239, 68, 68, 0.35)',
         fontLabel: 'Modern Glass',
-        previewTags: ['Pitch Black', 'Dual Crimson', 'Cyber Cyan'],
+        previewTags: ['Pitch Black', 'Dual Crimson', 'Laser Lime'],
     },
     {
         id: 'modern-bento',

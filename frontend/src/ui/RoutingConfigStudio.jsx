@@ -6,7 +6,7 @@ import Icon from './Icon';
 
 const ALL_PROVIDERS = [
     { id: 'openai', label: 'OpenAI (GPT-4o / 4o-mini)', color: 'bg-red-500' },
-    { id: 'gemini', label: 'Google Gemini (3.5 Flash / Pro)', color: 'bg-cyan-500' },
+    { id: 'gemini', label: 'Google Gemini (3.5 Flash / Pro)', color: 'bg-[#CBFF2E]' },
     { id: 'anthropic', label: 'Anthropic (Claude 3.5 Sonnet)', color: 'bg-red-700' },
 ];
 
@@ -243,7 +243,7 @@ const response = await client.chat.completions.create(
             <div className="p-6 border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white/[0.015]">
                 <div>
                     <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[12px] font-mono font-bold">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#CBFF2E]/15 border border-[#CBFF2E]/30 text-[#CBFF2E] text-[12px] font-mono font-bold">
                             2
                         </span>
                         <p className="text-[16px] font-bold text-white font-sans">
@@ -315,7 +315,7 @@ const response = await client.chat.completions.create(
                             onClick={() => setActiveTab(tab.id)}
                             className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-sans font-bold border-b-2 transition-colors cursor-pointer ${
                                 active
-                                    ? 'border-cyan-400 text-white bg-white/[0.02]'
+                                    ? 'border-[#CBFF2E] text-white bg-white/[0.02]'
                                     : 'border-transparent text-neutral-400 hover:text-neutral-200'
                             }`}
                         >
@@ -337,7 +337,7 @@ const response = await client.chat.completions.create(
                                         Default Smart Classifier Routing
                                     </p>
                                     <p className="text-[12px] text-neutral-400 font-sans mt-0.5">
-                                        Automatically picks the optimal model when requests use <code className="text-cyan-300">flowops-smart</code>, <code className="text-cyan-300">auto</code>, or omit <code className="text-cyan-300">model</code>.
+                                        Automatically picks the optimal model when requests use <code className="text-[#CBFF2E]">flowops-smart</code>, <code className="text-[#CBFF2E]">auto</code>, or omit <code className="text-[#CBFF2E]">model</code>.
                                     </p>
                                 </div>
                                 <button
@@ -347,24 +347,24 @@ const response = await client.chat.completions.create(
                                     onClick={() => patchDraft({ smartRoutingEnabled: !smartRoutingEnabled })}
                                     className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-pointer shrink-0 ${
                                         smartRoutingEnabled
-                                            ? 'bg-cyan-500/15 border-cyan-500/40'
+                                            ? 'bg-[#CBFF2E]/15 border-[#CBFF2E]/40'
                                             : 'bg-[#1a1a1a] border-white/10'
                                     }`}
                                 >
                                     <span
                                         className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
-                                            smartRoutingEnabled ? 'bg-cyan-500' : 'bg-neutral-700'
+                                            smartRoutingEnabled ? 'bg-[#CBFF2E]' : 'bg-neutral-700'
                                         }`}
                                     >
                                         <span
-                                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                            className={`inline-block h-3 w-3 transform rounded-full bg-black transition-transform ${
                                                 smartRoutingEnabled ? 'translate-x-4' : 'translate-x-1'
                                             }`}
                                         />
                                     </span>
                                     <span
                                         className={`text-[11px] font-mono font-bold uppercase ${
-                                            smartRoutingEnabled ? 'text-cyan-300' : 'text-neutral-500'
+                                            smartRoutingEnabled ? 'text-[#CBFF2E]' : 'text-neutral-500'
                                         }`}
                                     >
                                         {smartRoutingEnabled ? 'ON' : 'OFF'}
@@ -386,7 +386,7 @@ const response = await client.chat.completions.create(
                                                 onClick={() => patchDraft({ routingStrategy: card.id })}
                                                 className={`p-3.5 rounded-lg border text-left transition-all cursor-pointer flex items-start justify-between gap-3 ${
                                                     selected
-                                                        ? 'border-cyan-500/50 bg-cyan-500/10'
+                                                        ? 'border-[#CBFF2E]/50 bg-[#CBFF2E]/10'
                                                         : 'border-white/10 bg-[#121212] hover:border-white/25'
                                                 }`}
                                             >
@@ -394,7 +394,7 @@ const response = await client.chat.completions.create(
                                                     <p className="text-[13px] font-bold text-white font-sans">{card.title}</p>
                                                     <p className="text-[11px] text-neutral-400 font-sans mt-0.5">{card.subtitle}</p>
                                                 </div>
-                                                {selected && <Icon name="check_circle" className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />}
+                                                {selected && <Icon name="check_circle" className="w-4 h-4 text-[#CBFF2E] shrink-0 mt-0.5" />}
                                             </button>
                                         );
                                     })}
@@ -423,7 +423,7 @@ const response = await client.chat.completions.create(
                                             className="p-3 rounded-lg bg-[#121212] border border-white/10 flex items-center justify-between gap-3"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <span className="w-6 h-6 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono font-bold text-cyan-400 flex items-center justify-center">
+                                                <span className="w-6 h-6 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono font-bold text-[#CBFF2E] flex items-center justify-center">
                                                     {idx + 1}
                                                 </span>
                                                 <div>
@@ -474,7 +474,7 @@ const response = await client.chat.completions.create(
                                                 onClick={() => toggleFallbackProvider(prov.id)}
                                                 className={`px-3 py-1.5 rounded-lg border text-[12px] font-mono transition-all cursor-pointer ${
                                                     active
-                                                        ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300'
+                                                        ? 'border-[#CBFF2E]/40 bg-[#CBFF2E]/10 text-[#CBFF2E]'
                                                         : 'border-white/10 bg-[#141414] text-neutral-400 hover:text-white'
                                                 }`}
                                             >
@@ -553,7 +553,7 @@ const response = await client.chat.completions.create(
                                                             },
                                                         })
                                                     }
-                                                    className="w-20 bg-[#090909] border border-white/10 rounded px-2.5 py-1.5 text-[12px] font-mono text-white text-right focus:outline-none focus:border-cyan-400/50"
+                                                    className="w-20 bg-[#090909] border border-white/10 rounded px-2.5 py-1.5 text-[12px] font-mono text-white text-right focus:outline-none focus:border-[#CBFF2E]/60"
                                                 />
                                                 <span className="w-10 text-right text-[11px] font-mono text-neutral-400">
                                                     {pct}%
@@ -602,7 +602,7 @@ const response = await client.chat.completions.create(
                                         onClick={() => patchDraft({ retryCount: count })}
                                         className={`py-2.5 rounded-lg border font-mono font-bold text-[13px] transition-all cursor-pointer ${
                                             retryCount === count
-                                                ? 'border-cyan-400 bg-cyan-500/15 text-cyan-300'
+                                                ? 'border-[#CBFF2E] bg-[#CBFF2E]/15 text-[#CBFF2E]'
                                                 : 'border-white/10 bg-[#121212] text-neutral-400 hover:text-white'
                                         }`}
                                     >
@@ -643,13 +643,13 @@ const response = await client.chat.completions.create(
                                         placeholder="https://hooks.slack.com/services/T.../B.../..."
                                         value={slackWebhookUrl}
                                         onChange={(e) => patchDraft({ slackWebhookUrl: e.target.value })}
-                                        className="flex-1 bg-[#121212] border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50"
+                                        className="flex-1 bg-[#121212] border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#CBFF2E]/60"
                                     />
                                     <button
                                         type="button"
                                         disabled={isTestingAlert || !slackWebhookUrl.trim()}
                                         onClick={handleSendTestAlert}
-                                        className="px-3 py-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-[11px] font-sans font-bold cursor-pointer disabled:opacity-45 whitespace-nowrap"
+                                        className="px-3 py-2 rounded-lg border border-[#CBFF2E]/30 bg-[#CBFF2E]/10 hover:bg-[#CBFF2E]/20 text-[#CBFF2E] text-[11px] font-sans font-bold cursor-pointer disabled:opacity-45 whitespace-nowrap"
                                     >
                                         {isTestingAlert ? 'Sending...' : 'Test Alert'}
                                     </button>
@@ -702,7 +702,7 @@ const response = await client.chat.completions.create(
                             <div className="p-3.5 rounded-lg bg-[#121212] border border-white/10 text-[11px] text-neutral-300 font-sans space-y-1">
                                 <p className="font-bold text-white">Two-Tier Cache Headers (Active by Default on temp=0)</p>
                                 <p className="text-neutral-400">
-                                    Tier 1 (Redis SHA-256) &amp; Tier 2 (PostgreSQL <code className="text-cyan-300">pgvector</code> MiniLM-L6-v2) run automatically. Override per request via <code className="text-cyan-300">x-flowops-cache: false</code>, <code className="text-cyan-300">x-flowops-cache-force-refresh: true</code>, or <code className="text-cyan-300">x-flowops-cache-threshold: 0.88</code>.
+                                    Tier 1 (Redis SHA-256) &amp; Tier 2 (PostgreSQL <code className="text-[#CBFF2E]">pgvector</code> MiniLM-L6-v2) run automatically. Override per request via <code className="text-[#CBFF2E]">x-flowops-cache: false</code>, <code className="text-[#CBFF2E]">x-flowops-cache-force-refresh: true</code>, or <code className="text-[#CBFF2E]">x-flowops-cache-threshold: 0.88</code>.
                                 </p>
                             </div>
                         </div>

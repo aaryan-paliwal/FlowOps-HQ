@@ -260,7 +260,7 @@ export default function LiveLogsPage() {
 
                 <button
                     onClick={handleExportLogs}
-                    className="bg-[#06B6D4] hover:bg-[#08C1E0] text-neutral-950 font-bold px-4 py-2 text-xs tracking-wide rounded-xl flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-[0.98]"
+                    className="bg-[#CBFF2E] hover:bg-[#b8ea25] text-black font-bold px-4 py-2 text-xs tracking-wide rounded-xl flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-[0_0_15px_rgba(203,255,46,0.2)] hover:shadow-[0_0_20px_rgba(203,255,46,0.35)] active:scale-[0.98]"
                 >
                     <Icon name="download" className="w-3.5 h-3.5" />
                     <span>Export Logs</span>
@@ -296,7 +296,7 @@ export default function LiveLogsPage() {
                                         setIsLiveLogs(!isLiveLogs);
                                         toast.success(isLiveLogs ? 'Live streaming paused' : 'Live streaming enabled');
                                     }}
-                                    className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer ${isLiveLogs ? 'bg-[#06B6D4]' : 'bg-neutral-700'}`}
+                                    className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer ${isLiveLogs ? 'bg-[#CBFF2E]' : 'bg-neutral-700'}`}
                                 >
                                     <div className={`w-3.5 h-3.5 rounded-full bg-neutral-950 transition-transform duration-200 ${isLiveLogs ? 'translate-x-3.5' : 'translate-x-0'}`}></div>
                                 </button>
@@ -323,7 +323,7 @@ export default function LiveLogsPage() {
                     <div className="relative font-sans" ref={datePickerRef}>
                         <button
                             onClick={() => setIsTimeRangeOpen(!isTimeRangeOpen)}
-                            className={`flex items-center gap-2 bg-[#111111]/40 border px-4 py-2 rounded-xl text-white text-[13px] font-sans hover:bg-white/5 transition-all cursor-pointer select-none ${isTimeRangeOpen ? 'border-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.15)]' : 'border-white/5'
+                            className={`flex items-center gap-2 bg-[#111111]/40 border px-4 py-2 rounded-xl text-white text-[13px] font-sans hover:bg-white/5 transition-all cursor-pointer select-none ${isTimeRangeOpen ? 'border-[#CBFF2E] shadow-[0_0_12px_rgba(203,255,46,0.2)]' : 'border-white/5'
                                 }`}
                         >
                             <Icon name="calendar_today" className="w-4 h-4 text-neutral-400" />
@@ -401,7 +401,7 @@ export default function LiveLogsPage() {
                         <button
                             onClick={() => setIsColumnSelectOpen(!isColumnSelectOpen)}
                             className={`border p-2 rounded-xl text-white transition-all cursor-pointer ${isColumnSelectOpen
-                                    ? 'text-[#06B6D4] bg-white/5 border-[#06B6D4] shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                                    ? 'text-[#CBFF2E] bg-white/5 border-[#CBFF2E] shadow-[0_0_12px_rgba(203,255,46,0.2)]'
                                     : 'text-neutral-400 hover:text-white bg-[#111111]/40 border-white/5'
                                 }`}
                         >
@@ -418,7 +418,7 @@ export default function LiveLogsPage() {
                                         placeholder="Search columns..."
                                         value={columnSearchQuery}
                                         onChange={(e) => setColumnSearchQuery(e.target.value)}
-                                        className="w-full bg-[#0E0E10] border border-[#06B6D4]/80 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-[#06B6D4] font-sans"
+                                        className="w-full bg-[#0E0E10] border border-[#CBFF2E]/80 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-[#CBFF2E] font-sans"
                                     />
                                 </div>
 
@@ -426,7 +426,7 @@ export default function LiveLogsPage() {
                                 <div className="flex items-center gap-3.5 mb-3 px-1 text-xs select-none">
                                     <button
                                         onClick={selectAllColumns}
-                                        className="text-[#06B6D4] hover:text-cyan-300 font-semibold cursor-pointer transition-colors"
+                                        className="text-[#CBFF2E] hover:text-[#d6ff54] font-semibold cursor-pointer transition-colors"
                                     >
                                         Select All
                                     </button>
@@ -453,7 +453,7 @@ export default function LiveLogsPage() {
                                                 >
                                                     {/* Custom High-Fidelity Checkbox */}
                                                     <div className={`w-4 h-4 rounded flex items-center justify-center transition-all ${isChecked
-                                                            ? 'bg-[#06B6D4] border border-[#06B6D4]'
+                                                            ? 'bg-[#CBFF2E] border border-[#CBFF2E]'
                                                             : 'bg-[#0E0E10] border border-white/20 group-hover:border-white/40'
                                                         }`}>
                                                         {isChecked && (
@@ -496,7 +496,7 @@ export default function LiveLogsPage() {
 
                     <button
                         onClick={handleClearFilters}
-                        className="bg-[#06B6D4] hover:bg-[#08C1E0] text-neutral-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_20px_rgba(6,182,212,0.25)] active:scale-[0.98]"
+                        className="bg-[#CBFF2E] hover:bg-[#b8ea25] text-black font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_15px_rgba(203,255,46,0.2)] hover:shadow-[0_0_20px_rgba(203,255,46,0.35)] active:scale-[0.98]"
                     >
                         <span>+ Clear Filters</span>
                     </button>
@@ -541,7 +541,7 @@ export default function LiveLogsPage() {
                                                         </span>
                                                     )}
                                                     {log.isStreaming && (
-                                                        <span className="inline-flex items-center bg-cyan-950/30 text-cyan-300 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border border-cyan-500/20">
+                                                        <span className="inline-flex items-center bg-[#CBFF2E]/10 text-[#CBFF2E] px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border border-[#CBFF2E]/25">
                                                             STREAM
                                                         </span>
                                                     )}
@@ -602,7 +602,7 @@ export default function LiveLogsPage() {
                         Learn how to integrate FlowOps HQ and start logging your AI requests.{' '}
                         <Link
                             to="/docs/introduction"
-                            className="text-cyan-400 hover:text-cyan-300 transition-colors font-semibold inline-flex items-center gap-0.5 hover:underline cursor-pointer"
+                            className="text-[#CBFF2E] hover:text-[#d6ff54] transition-colors font-semibold inline-flex items-center gap-0.5 hover:underline cursor-pointer"
                         >
                             Learn More →
                         </Link>

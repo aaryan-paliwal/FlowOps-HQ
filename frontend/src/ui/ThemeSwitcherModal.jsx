@@ -184,7 +184,7 @@ export function ThemeSwitcherModal() {
                 {/* Footer */}
                 <div className="flex items-center justify-between px-6 py-4 border-t border-white/10 bg-white/[0.02] text-[12px] text-neutral-400 font-sans">
                     <div className="flex items-center gap-2">
-                        <Icon name="auto_awesome" className="w-4 h-4 text-cyan-400" />
+                        <Icon name="auto_awesome" className="w-4 h-4 text-[#CBFF2E]" />
                         <span>Theme selection persists automatically across sessions in localStorage.</span>
                     </div>
                     <button

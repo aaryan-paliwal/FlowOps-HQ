@@ -92,7 +92,7 @@ export default function ManagedApisPage() {
                         onClick={() => setActiveTab('general')}
                         className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-[13px] font-bold font-sans transition-all text-left cursor-pointer border ${
                             activeTab === 'general'
-                                ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-400'
+                                ? 'bg-[#CBFF2E]/10 border-[#CBFF2E]/25 text-[#CBFF2E]'
                                 : 'border-transparent text-neutral-400 hover:bg-white/5 hover:text-white'
                         }`}
                     >
@@ -100,13 +100,13 @@ export default function ManagedApisPage() {
                             <Icon name="tune" className="w-4 h-4 shrink-0"  />
                             <span>General</span>
                         </div>
-                        {activeTab === 'general' && <Icon name="chevron_right" className="w-3.5 h-3.5 text-cyan-400"  />}
+                        {activeTab === 'general' && <Icon name="chevron_right" className="w-3.5 h-3.5 text-[#CBFF2E]"  />}
                     </button>
                     <button
                         onClick={() => setActiveTab('guardrails')}
                         className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-[13px] font-bold font-sans transition-all text-left cursor-pointer border ${
                             activeTab === 'guardrails'
-                                ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-400'
+                                ? 'bg-[#CBFF2E]/10 border-[#CBFF2E]/25 text-[#CBFF2E]'
                                 : 'border-transparent text-neutral-400 hover:bg-white/5 hover:text-white'
                         }`}
                     >
@@ -114,7 +114,7 @@ export default function ManagedApisPage() {
                             <Icon name="shield" className="w-4 h-4 shrink-0"  />
                             <span>Workspace Guardrails</span>
                         </div>
-                        {activeTab === 'guardrails' && <Icon name="chevron_right" className="w-3.5 h-3.5 text-cyan-400"  />}
+                        {activeTab === 'guardrails' && <Icon name="chevron_right" className="w-3.5 h-3.5 text-[#CBFF2E]"  />}
                     </button>
                 </div>
 
@@ -338,7 +338,7 @@ export default function ManagedApisPage() {
                         <div className="space-y-1 text-[11.5px] font-sans">
                             <h4 className="font-bold text-white leading-normal">Need Help?</h4>
                             <p className="text-neutral-400 leading-relaxed">
-                                Need help or facing issues? Our <a href="#/support" className="text-cyan-400 hover:text-cyan-300 transition-colors font-semibold">support team</a> is here to help.
+                                Need help or facing issues? Our <a href="#/support" className="text-[#CBFF2E] hover:text-[#d6ff54] transition-colors font-semibold">support team</a> is here to help.
                             </p>
                         </div>
                     </Card>

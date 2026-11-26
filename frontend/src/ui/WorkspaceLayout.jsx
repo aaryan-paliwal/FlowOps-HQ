@@ -46,8 +46,8 @@ export default function WorkspaceLayout() {
                         <span className="text-[13px] font-bold text-white font-sans tracking-tight">
                             {activeOrg?.name}
                         </span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]" />
+                        <span className="flex items-center gap-1.5 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-[#CBFF2E]/25 bg-[#CBFF2E]/10 text-[#CBFF2E]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#CBFF2E] shadow-[0_0_6px_#CBFF2E]" />
                             {activeOrg?.environment || 'Production'}
                         </span>
                     </div>

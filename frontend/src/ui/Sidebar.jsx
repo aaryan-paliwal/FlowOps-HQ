@@ -139,7 +139,7 @@ export function Sidebar({ orgSlug }) {
                     >
                         <Icon name={iconName} className={`w-[18px] h-[18px] ${active ? 'text-red-400' : ''}`} />
                         {active && (
-                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4] border border-[#060507]" />
+                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#CBFF2E] shadow-[0_0_6px_#CBFF2E] border border-[#060507]" />
                         )}
                     </Link>
                     <div className="absolute left-full ml-3 px-2 py-1 bg-[#08060a] border border-red-500/20 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
@@ -163,7 +163,7 @@ export function Sidebar({ orgSlug }) {
                     <span>{label}</span>
                 </div>
                 {active && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4] shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#CBFF2E] shadow-[0_0_6px_#CBFF2E] shrink-0" />
                 )}
             </Link>
         );
@@ -430,7 +430,7 @@ export function Sidebar({ orgSlug }) {
                                 to={`/ws/${orgSlug}/billing/upgrade`}
                                 className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-950/30 to-transparent border border-red-500/20 hover:border-red-500/40 hover:bg-red-950/40 flex items-center justify-center shrink-0 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(239,68,68,0.15)]"
                             >
-                                <Icon name="emoji_events" className="w-5 h-5 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+                                <Icon name="emoji_events" className="w-5 h-5 text-[#CBFF2E] drop-shadow-[0_0_8px_rgba(203,255,46,0.5)]" />
                             </Link>
                             <div className="absolute left-full ml-3 px-2 py-1 bg-[#08060a] border border-red-500/20 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
                                 Upgrade to Pro (Limit Exceeded)
@@ -442,7 +442,7 @@ export function Sidebar({ orgSlug }) {
                             className="block bg-gradient-to-br from-red-950/30 via-[#0a070c] to-transparent border border-[rgba(153,27,27,0.25)] hover:border-red-500/40 p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-all hover:shadow-[0_0_20px_rgba(239,68,68,0.15)] active:scale-[0.98]"
                         >
                             <div className="w-9 h-9 rounded-lg bg-red-950/40 border border-red-500/30 flex items-center justify-center shrink-0">
-                                <Icon name="emoji_events" className="w-5 h-5 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+                                <Icon name="emoji_events" className="w-5 h-5 text-[#CBFF2E] drop-shadow-[0_0_8px_rgba(203,255,46,0.5)]" />
                             </div>
                             <div>
                                 <p className="text-[12px] font-bold text-white leading-normal">Upgrade to Pro</p>
@@ -533,15 +533,15 @@ export function Sidebar({ orgSlug }) {
                                 <h3 className="text-[13px] font-semibold text-neutral-300 mb-3">Organisation Role</h3>
                                 <div className="flex gap-4">
                                     {/* Admin Radio */}
-                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${inviteRole === 'admin' ? 'bg-[#06242e]/40 border-cyan-500/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
+                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${inviteRole === 'admin' ? 'bg-[#CBFF2E]/10 border-[#CBFF2E]/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
                                         <div className="mt-0.5 shrink-0">
-                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'admin' ? 'border-cyan-400 bg-cyan-400' : 'border-neutral-500'}`}>
-                                                {inviteRole === 'admin' && <div className="w-1.5 h-1.5 bg-[#06242e] rounded-full"></div>}
+                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'admin' ? 'border-[#CBFF2E] bg-[#CBFF2E]' : 'border-neutral-500'}`}>
+                                                {inviteRole === 'admin' && <div className="w-1.5 h-1.5 bg-black rounded-full"></div>}
                                             </div>
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-1.5 mb-0.5">
-                                                <Icon name="shield" className={`w-4 h-4 ${inviteRole === 'admin' ? 'text-cyan-400' : 'text-neutral-400'}`} />
+                                                <Icon name="shield" className={`w-4 h-4 ${inviteRole === 'admin' ? 'text-[#CBFF2E]' : 'text-neutral-400'}`} />
                                                 <span className="text-[14px] font-bold text-white">Admin</span>
                                             </div>
                                             <div className="text-[12px] text-neutral-400 leading-tight mt-1">Full access to manage the organisation</div>
@@ -550,15 +550,15 @@ export function Sidebar({ orgSlug }) {
                                     </label>
 
                                     {/* Member Radio */}
-                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${inviteRole === 'member' ? 'bg-[#06242e]/40 border-cyan-500/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
+                                    <label className={`flex-1 flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${inviteRole === 'member' ? 'bg-[#CBFF2E]/10 border-[#CBFF2E]/50' : 'bg-transparent border-white/10 hover:border-white/20'}`}>
                                         <div className="mt-0.5 shrink-0">
-                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'member' ? 'border-cyan-400 bg-cyan-400' : 'border-neutral-500'}`}>
-                                                {inviteRole === 'member' && <div className="w-1.5 h-1.5 bg-[#06242e] rounded-full"></div>}
+                                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${inviteRole === 'member' ? 'border-[#CBFF2E] bg-[#CBFF2E]' : 'border-neutral-500'}`}>
+                                                {inviteRole === 'member' && <div className="w-1.5 h-1.5 bg-black rounded-full"></div>}
                                             </div>
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-1.5 mb-0.5">
-                                                <Icon name="person" className={`w-4 h-4 ${inviteRole === 'member' ? 'text-cyan-400' : 'text-neutral-400'}`} />
+                                                <Icon name="person" className={`w-4 h-4 ${inviteRole === 'member' ? 'text-[#CBFF2E]' : 'text-neutral-400'}`} />
                                                 <span className="text-[14px] font-bold text-white">Member</span>
                                             </div>
                                             <div className="text-[12px] text-neutral-400 leading-tight mt-1">Access to assigned workspaces only</div>
@@ -578,12 +578,12 @@ export function Sidebar({ orgSlug }) {
                                             placeholder="user@example.com"
                                             value={inviteEmail}
                                             onChange={(e) => setInviteEmail(e.target.value)}
-                                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-[13px] text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-[13px] text-white placeholder-neutral-500 focus:outline-none focus:border-[#CBFF2E]/50 focus:ring-1 focus:ring-[#CBFF2E]/50 transition-all"
                                         />
                                     </div>
                                     <button
                                         onClick={handleSendInvite}
-                                        className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-[13px] shadow-md cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                                        className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-[13px] shadow-[0_0_15px_rgba(239,68,68,0.35)] cursor-pointer disabled:opacity-50 whitespace-nowrap"
                                     >
                                         Send Invite
                                     </button>
@@ -619,7 +619,7 @@ export function Sidebar({ orgSlug }) {
                                         placeholder="e.g. Acme Corp"
                                         value={newOrgName}
                                         onChange={(e) => setNewOrgName(e.target.value)}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-[13px] text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-[13px] text-white placeholder-neutral-500 focus:outline-none focus:border-[#CBFF2E]/50 focus:ring-1 focus:ring-[#CBFF2E]/50 transition-all"
                                         autoFocus
                                     />
                                 </div>
@@ -631,7 +631,7 @@ export function Sidebar({ orgSlug }) {
                                     <select 
                                         value={newOrgUseCase} 
                                         onChange={(e) => setNewOrgUseCase(e.target.value)}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2.5 text-[13px] text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 appearance-none"
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2.5 text-[13px] text-white focus:outline-none focus:border-[#CBFF2E]/50 focus:ring-1 focus:ring-[#CBFF2E]/50 appearance-none"
                                     >
                                         <option value="Personal Project">Personal Project</option>
                                         <option value="Client Agency">Client Agency</option>
@@ -643,7 +643,7 @@ export function Sidebar({ orgSlug }) {
                                     <select 
                                         value={newOrgEnv} 
                                         onChange={(e) => setNewOrgEnv(e.target.value)}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2.5 text-[13px] text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 appearance-none"
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2.5 text-[13px] text-white focus:outline-none focus:border-[#CBFF2E]/50 focus:ring-1 focus:ring-[#CBFF2E]/50 appearance-none"
                                     >
                                         <option value="Development">Development / Staging</option>
                                         <option value="Production">Production</option>
@@ -654,7 +654,7 @@ export function Sidebar({ orgSlug }) {
                             <div className="pt-2">
                                 <button
                                     onClick={handleCreateOrg}
-                                    className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-[13px] shadow-md cursor-pointer disabled:opacity-50"
+                                    className="w-full bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-[13px] shadow-[0_0_15px_rgba(239,68,68,0.35)] cursor-pointer disabled:opacity-50"
                                 >
                                     Create Workspace
                                 </button>

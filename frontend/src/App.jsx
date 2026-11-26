@@ -25,7 +25,7 @@ const DocsPage = lazy(() => import('./pages/DocsPage'));
 function PageLoader() {
   return (
     <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
-      <div className="h-8 w-8 rounded-full border-2 border-white/10 border-t-cyan-400 animate-spin" />
+      <div className="h-8 w-8 rounded-full border-2 border-white/10 border-t-[#CBFF2E] animate-spin" />
     </div>
   );
 }

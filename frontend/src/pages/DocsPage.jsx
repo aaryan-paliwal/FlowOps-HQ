@@ -59,7 +59,7 @@ function SectionIntroduction() {
                         <div className="flex items-center justify-center gap-8 text-neutral-500">
                             <div className="p-4 border border-white/10 rounded-xl bg-white/5">Your App</div>
                             <Icon name="arrow_forward" className="text-[24px]" />
-                            <div className="p-4 border border-cyan-500/30 rounded-xl bg-cyan-500/10 text-cyan-400 font-bold">FlowOps Gateway</div>
+                            <div className="p-4 border border-[#CBFF2E]/30 rounded-xl bg-[#CBFF2E]/10 text-[#CBFF2E] font-bold">FlowOps Gateway</div>
                             <Icon name="arrow_forward" className="text-[24px]" />
                             <div className="p-4 border border-white/10 rounded-xl bg-white/5">LLM Providers</div>
                         </div>
@@ -75,7 +75,7 @@ function SectionIntroduction() {
                     Documentation Index
                 </h3>
                 <p className="text-[16px] text-neutral-400 leading-relaxed font-sans">
-                    Fetch the complete API specification at: <a href="#" className="text-cyan-400 hover:underline">https://docs.flowopshq.com/api/v1/openapi.json</a>
+                    Fetch the complete API specification at: <a href="#" className="text-[#CBFF2E] hover:underline">https://docs.flowopshq.com/api/v1/openapi.json</a>
                 </p>
                 <p className="text-[16px] text-neutral-400 leading-relaxed font-sans">
                     Use our OpenAPI spec to instantly generate client libraries in your preferred language.
@@ -123,7 +123,7 @@ function SectionFirstRequest() {
                             >
                                 {tab}
                                 {activeTab === tab && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500"></div>
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#CBFF2E]"></div>
                                 )}
                             </button>
                         ))}
@@ -143,8 +143,8 @@ client = FlowOps({'\n'}
 response = client.chat.completions.create({'\n'}
     model=<span className="text-green-400">"gpt-4"</span>,{'\n'}
     messages=[{'\n'}
-        {'{'}<span className="text-cyan-300">"role"</span>: <span className="text-green-400">"system"</span>, <span className="text-cyan-300">"content"</span>: <span className="text-green-400">"You are a helpful assistant."</span>{'}'},{'\n'}
-        {'{'}<span className="text-cyan-300">"role"</span>: <span className="text-green-400">"user"</span>, <span className="text-cyan-300">"content"</span>: <span className="text-green-400">"Hello!"</span>{'}'}{'\n'}
+        {'{'}<span className="text-[#CBFF2E]">"role"</span>: <span className="text-green-400">"system"</span>, <span className="text-[#CBFF2E]">"content"</span>: <span className="text-green-400">"You are a helpful assistant."</span>{'}'},{'\n'}
+        {'{'}<span className="text-[#CBFF2E]">"role"</span>: <span className="text-green-400">"user"</span>, <span className="text-[#CBFF2E]">"content"</span>: <span className="text-green-400">"Hello!"</span>{'}'}{'\n'}
     ]{'\n'}
 ){'\n'}
 <span className="text-yellow-200">print</span>(response.choices[<span className="text-orange-400">0</span>].message.content)
@@ -179,7 +179,7 @@ function SectionFeatures() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {features.map(f => (
                     <div key={f.title} className="p-6 border border-white/10 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors">
-                        <Icon name={f.icon} className="text-[32px] text-cyan-400 mb-4" />
+                        <Icon name={f.icon} className="text-[32px] text-[#CBFF2E] mb-4" />
                         <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
                         <p className="text-sm text-neutral-400 leading-relaxed">{f.desc}</p>
                     </div>

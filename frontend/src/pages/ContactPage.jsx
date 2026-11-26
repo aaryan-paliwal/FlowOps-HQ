@@ -87,7 +87,7 @@ export default function ContactPage() {
                                         value={formData.name}
                                         onChange={handleChange}
                                         placeholder="John Doe"
-                                        className="w-full px-3 py-2.5 pl-9 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+                                        className="w-full px-3 py-2.5 pl-9 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-[#CBFF2E]/60 focus:ring-1 focus:ring-[#CBFF2E]/30 transition-all"
                                     />
                                 </div>
                             </div>
@@ -101,7 +101,7 @@ export default function ContactPage() {
                                         value={formData.email}
                                         onChange={handleChange}
                                         placeholder="john@example.com"
-                                        className="w-full px-3 py-2.5 pl-9 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+                                        className="w-full px-3 py-2.5 pl-9 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-[#CBFF2E]/60 focus:ring-1 focus:ring-[#CBFF2E]/30 transition-all"
                                     />
                                 </div>
                             </div>
@@ -117,7 +117,7 @@ export default function ContactPage() {
                                     value={formData.subject}
                                     onChange={handleChange}
                                     placeholder="How can we help you?"
-                                    className="w-full px-3 py-2.5 pl-9 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+                                    className="w-full px-3 py-2.5 pl-9 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-[#CBFF2E]/60 focus:ring-1 focus:ring-[#CBFF2E]/30 transition-all"
                                 />
                             </div>
                         </div>
@@ -130,7 +130,7 @@ export default function ContactPage() {
                                 onChange={handleChange}
                                 rows={6}
                                 placeholder="Tell us more about your inquiry..."
-                                className="w-full px-3 py-3 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all resize-none"
+                                className="w-full px-3 py-3 bg-[#111111]/45 border border-white/5 rounded-lg text-[14px] font-sans text-white focus:outline-none focus:border-[#CBFF2E]/60 focus:ring-1 focus:ring-[#CBFF2E]/30 transition-all resize-none"
                             />
                         </div>
 
@@ -138,7 +138,7 @@ export default function ContactPage() {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full sm:w-auto bg-[#06B6D4] hover:bg-[#08C1E0] text-neutral-950 px-8 py-3 rounded-xl font-sans font-bold text-[14px] transition-all shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70"
+                                className="w-full sm:w-auto bg-[#CBFF2E] hover:bg-[#b8ea25] text-black px-8 py-3 rounded-xl font-sans font-bold text-[14px] transition-all shadow-[0_0_15px_rgba(203,255,46,0.2)] hover:shadow-[0_0_20px_rgba(203,255,46,0.4)] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70"
                             >
                                 {isSubmitting ? (
                                     <>
@@ -162,12 +162,12 @@ export default function ContactPage() {
                         <h3 className="text-[15px] font-bold text-white font-sans mb-4">Contact Information</h3>
                         <div className="space-y-5">
                             <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                                    <Icon name="mail" className="w-5 h-5 text-cyan-400" />
+                                <div className="w-10 h-10 rounded-xl bg-[#CBFF2E]/10 border border-[#CBFF2E]/25 flex items-center justify-center shrink-0">
+                                    <Icon name="mail" className="w-5 h-5 text-[#CBFF2E]" />
                                 </div>
                                 <div>
                                     <p className="text-[11px] font-bold text-neutral-500 uppercase tracking-wide font-sans mb-0.5">Email Support</p>
-                                    <a href="mailto:flowops.hq@gmail.com" className="text-[14px] font-medium text-white hover:text-cyan-400 transition-colors">
+                                    <a href="mailto:flowops.hq@gmail.com" className="text-[14px] font-medium text-white hover:text-[#CBFF2E] transition-colors">
                                         flowops.hq@gmail.com
                                     </a>
                                 </div>
@@ -189,10 +189,10 @@ export default function ContactPage() {
 
                     {/* Premium Call to Action */}
                     <div className="relative bg-gradient-to-br from-[#12141a] via-[#0a0a0a] to-[#0c0c0c] border border-white/5 rounded-2xl p-6 shadow-2xl overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#CBFF2E]/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div className="relative z-10">
                             <h4 className="text-[14px] font-bold text-white font-sans mb-2 flex items-center gap-2">
-                                <Icon name="rocket_launch" className="w-4 h-4 text-cyan-400" />
+                                <Icon name="rocket_launch" className="w-4 h-4 text-[#CBFF2E]" />
                                 Enterprise Support
                             </h4>
                             <p className="text-[12px] text-neutral-400 font-sans leading-relaxed mb-4">

@@ -46,7 +46,7 @@ export default function DocsLayout({ children }) {
                         <Link to="#demo" className="hover:text-white transition-colors">Book Demo</Link>
                     </nav>
                     <div className="flex items-center gap-4">
-                        <Link to="/login" className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-1">
+                        <Link to="/login" className="bg-[#CBFF2E] hover:bg-[#b8ea25] text-black font-bold px-4 py-1.5 rounded-lg text-sm transition-colors flex items-center gap-1 shadow-[0_0_12px_rgba(203,255,46,0.25)]">
                             Sign In <Icon name="chevron_right" className="text-[16px]" />
                         </Link>
                         <a href="https://github.com/aaryan-paliwal/FlowOps-HQ" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white transition-colors p-1.5 flex items-center justify-center" aria-label="GitHub">
@@ -60,7 +60,7 @@ export default function DocsLayout({ children }) {
             
             {/* Secondary Navigation (Tabs) */}
             <div className="sticky top-14 z-40 flex items-center gap-8 px-6 h-12 border-b border-white/5 text-sm font-medium overflow-x-auto shrink-0 bg-[#030000]/60 backdrop-blur-xl">
-                <Link to="/docs/introduction" className="text-white border-b-2 border-cyan-500 py-3 h-full flex items-center">Docs</Link>
+                <Link to="/docs/introduction" className="text-white border-b-2 border-[#CBFF2E] py-3 h-full flex items-center">Docs</Link>
                 <Link to="#integrations" className="text-neutral-400 hover:text-white transition-colors py-3 h-full flex items-center border-b-2 border-transparent">Integrations</Link>
                 <Link to="#gateway-apis" className="text-neutral-400 hover:text-white transition-colors py-3 h-full flex items-center border-b-2 border-transparent">Gateway APIs</Link>
                 <Link to="#admin-apis" className="text-neutral-400 hover:text-white transition-colors py-3 h-full flex items-center border-b-2 border-transparent">Admin APIs</Link>
@@ -80,13 +80,13 @@ export default function DocsLayout({ children }) {
                                 <Icon name="rocket_launch" className="text-[14px] text-neutral-400" />
                                 <h4 className="text-sm font-bold text-white">Introduction</h4>
                             </div>
-                            <Link to="/docs/introduction" className={`block px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/introduction' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/introduction" className={`block px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/introduction' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 What is FlowOps HQ?
                             </Link>
-                            <Link to="/docs/first-request" className={`block px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/first-request' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/first-request" className={`block px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/first-request' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 Make Your First Request
                             </Link>
-                            <Link to="/docs/features" className={`block px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/features' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/features" className={`block px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/features' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 FlowOps Features
                             </Link>
                         </div>
@@ -97,23 +97,23 @@ export default function DocsLayout({ children }) {
                                 <Icon name="view_in_ar" className="text-[14px] text-neutral-400" />
                                 <h4 className="text-sm font-bold text-white">Product</h4>
                             </div>
-                            <Link to="/docs/observability" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/observability' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/observability" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/observability' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 <span>Observability</span>
                                 <Icon name="chevron_right" className="text-[16px] text-neutral-600" />
                             </Link>
-                            <Link to="/docs/ai-gateway" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/ai-gateway' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/ai-gateway" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/ai-gateway' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 <span>AI Gateway</span>
                                 <Icon name="chevron_right" className="text-[16px] text-neutral-600" />
                             </Link>
-                            <Link to="/docs/model-catalog" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/model-catalog' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/model-catalog" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/model-catalog' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 <span>Model Catalog</span>
                                 <Icon name="chevron_right" className="text-[16px] text-neutral-600" />
                             </Link>
-                            <Link to="/docs/mcp-gateway" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/mcp-gateway' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/mcp-gateway" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/mcp-gateway' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 <span>MCP Gateway</span>
                                 <Icon name="chevron_right" className="text-[16px] text-neutral-600" />
                             </Link>
-                            <Link to="/docs/agent-gateway" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/agent-gateway' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
+                            <Link to="/docs/agent-gateway" className={`flex items-center justify-between px-3 py-1.5 ml-[18px] text-[13.5px] rounded-lg font-medium transition-colors ${location.pathname === '/docs/agent-gateway' ? 'bg-[#CBFF2E]/10 text-[#CBFF2E] border border-[#CBFF2E]/25' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}>
                                 <span>Agent Gateway</span>
                                 <Icon name="chevron_right" className="text-[16px] text-neutral-600" />
                             </Link>
@@ -139,7 +139,7 @@ export default function DocsLayout({ children }) {
                     />
                     <div className="flex items-center gap-3 pr-2 shrink-0">
                         <span className="text-xs font-mono text-neutral-500 hidden sm:block">Ctrl+I</span>
-                        <button className="w-8 h-8 rounded-full bg-cyan-900/30 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 flex items-center justify-center transition-colors">
+                        <button className="w-8 h-8 rounded-full bg-[#CBFF2E]/10 hover:bg-[#CBFF2E]/20 text-[#CBFF2E] border border-[#CBFF2E]/30 flex items-center justify-center transition-colors">
                             <Icon name="arrow_upward" className="text-[18px]" />
                         </button>
                     </div>

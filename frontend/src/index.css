@@ -18,6 +18,8 @@
   --color-neutral-50: #fafafa;
 
   --color-primary-500: #000000;
+  --color-laser-lime: #CBFF2E;
+  --color-laser-lime-glow: rgba(203, 255, 46, 0.35);
 
   --radius-xs: 6px;
   --radius-sm: 8px;
@@ -30,7 +32,7 @@
 }
 
 /* ─── Reverse Engineer Anything (REA) Signature Aurora Glass 4-Color Architecture ─── */
-/* Colors: 1) Pitch Black (#060507), 2) Deep Wine Red (#881337 / #991b1b), 3) Electric Crimson Red (#ef4444), 4) Complementary Cyan (#06b6d4) */
+/* Colors: 1) Pitch Black (#060507), 2) Deep Wine Red (#881337 / #991b1b), 3) Electric Crimson Red (#ef4444), 4) Laser Lime (#CBFF2E) */
 :root, [data-theme="aurora-glass"] {
   --theme-bg-app: #060507;
   --theme-bg-card: rgba(16, 10, 14, 0.72);
@@ -40,12 +42,12 @@
   --theme-border-top: rgba(239, 68, 68, 0.50);
   --theme-accent-primary: #ef4444;      /* Electric Crimson Red */
   --theme-accent-secondary: #991b1b;    /* Deep Wine / Ruby Red */
-  --theme-accent-complement: #06b6d4;   /* Cyber Cyan (Complementary to red) */
+  --theme-accent-complement: #CBFF2E;   /* Laser Lime (Complementary to red) */
   --theme-accent-glow: rgba(239, 68, 68, 0.28);
-  --theme-accent-glow-complement: rgba(6, 182, 212, 0.25);
-  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #fca5a5 65%, #67e8f9 100%);
+  --theme-accent-glow-complement: rgba(203, 255, 46, 0.25);
+  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #fca5a5 65%, #CBFF2E 100%);
   --theme-dot-color: #240b10;
-  --theme-ambient-glow: radial-gradient(ellipse at 85% 15%, rgba(239, 68, 68, 0.15) 0%, transparent 60%), radial-gradient(circle at 10% 85%, rgba(6, 182, 212, 0.10) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(153, 27, 27, 0.08) 0%, transparent 70%);
+  --theme-ambient-glow: radial-gradient(ellipse at 85% 15%, rgba(239, 68, 68, 0.15) 0%, transparent 60%), radial-gradient(circle at 10% 85%, rgba(203, 255, 46, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(153, 27, 27, 0.08) 0%, transparent 70%);
 }
 
 [data-theme="cyber-edge"] {
@@ -53,16 +55,16 @@
   --theme-bg-card: #0d0e12;
   --theme-bg-surface: #14141c;
   --theme-border: rgba(255, 255, 255, 0.08);
-  --theme-border-hover: rgba(6, 182, 212, 0.45);
-  --theme-border-top: rgba(6, 182, 212, 0.35);
-  --theme-accent-primary: #06b6d4;
+  --theme-border-hover: rgba(203, 255, 46, 0.45);
+  --theme-border-top: rgba(203, 255, 46, 0.35);
+  --theme-accent-primary: #CBFF2E;
   --theme-accent-secondary: #10b981;
   --theme-accent-complement: #ef4444;
-  --theme-accent-glow: rgba(6, 182, 212, 0.18);
+  --theme-accent-glow: rgba(203, 255, 46, 0.18);
   --theme-accent-glow-complement: rgba(239, 68, 68, 0.20);
-  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #a5f3fc 100%);
+  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #e8ff8c 100%);
   --theme-dot-color: #1a1a24;
-  --theme-ambient-glow: radial-gradient(ellipse at right top, rgba(6, 182, 212, 0.12) 0%, transparent 60%), radial-gradient(circle at 10% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+  --theme-ambient-glow: radial-gradient(ellipse at right top, rgba(203, 255, 46, 0.12) 0%, transparent 60%), radial-gradient(circle at 10% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
 }
 
 [data-theme="vercel-clean"] {

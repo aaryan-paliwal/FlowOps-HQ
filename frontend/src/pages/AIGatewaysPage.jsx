@@ -113,7 +113,7 @@ export default function AIGatewaysPage() {
                 <div className="space-y-4">
                     {apisLoading ? (
                         <div className="py-12 text-center text-neutral-500 font-sans">
-                            <Icon name="autorenew" className="w-6 h-6 animate-spin mx-auto mb-2 text-cyan-400"  />
+                            <Icon name="autorenew" className="w-6 h-6 animate-spin mx-auto mb-2 text-[#CBFF2E]"  />
                             Loading configured AI routes...
                         </div>
                     ) : apisList.length === 0 ? (
@@ -144,7 +144,7 @@ export default function AIGatewaysPage() {
                                         }}
                                         className="px-3 py-1.5 rounded-lg border border-[rgba(153,27,27,0.3)] bg-red-950/20 hover:bg-red-950/40 hover:border-red-500/40 text-[12px] font-sans font-semibold text-neutral-200 transition-all cursor-pointer flex items-center gap-1.5"
                                     >
-                                        <Icon name="bolt" className="w-3.5 h-3.5 text-cyan-400" />
+                                        <Icon name="bolt" className="w-3.5 h-3.5 text-[#CBFF2E]" />
                                         <span>Quickstart: {preset.label.split(' ')[0]}</span>
                                     </button>
                                 ))}
@@ -164,11 +164,11 @@ export default function AIGatewaysPage() {
                             <div key={api.id} className="p-4 border border-[var(--theme-border)] rounded-xl bg-[var(--theme-bg-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-red-500/40 hover:shadow-[0_0_18px_rgba(239,68,68,0.12)] transition-all">
                                 <div className="space-y-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
+                                        <span className="w-2 h-2 rounded-full bg-[#CBFF2E] shadow-[0_0_8px_#CBFF2E]"></span>
                                         <h3 className="text-[14px] font-bold text-white font-sans truncate">{api.name}</h3>
                                     </div>
                                     <p className="text-[12px] font-mono text-neutral-400 truncate">
-                                        Drop-in OpenAI Base URL: <span className="text-cyan-400">/v1</span> <span className="text-neutral-600">·</span> <span className="text-neutral-500">Legacy: /gateway/v1/chat/completions</span>
+                                        Drop-in OpenAI Base URL: <span className="text-[#CBFF2E]">/v1</span> <span className="text-neutral-600">·</span> <span className="text-neutral-500">Legacy: /gateway/v1/chat/completions</span>
                                     </p>
                                     <p className="text-[11px] font-sans text-neutral-400 truncate">
                                         Target Upstream: {api.baseUrl}
@@ -188,7 +188,7 @@ export default function AIGatewaysPage() {
                                         }
                                         className={`flex items-center gap-2.5 text-[12px] font-sans px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${
                                             api.smartRoutingEnabled
-                                                ? 'bg-cyan-500/10 border-cyan-500/35 text-white hover:border-cyan-400/50'
+                                                ? 'bg-[#CBFF2E]/10 border-[#CBFF2E]/35 text-white hover:border-[#CBFF2E]/60'
                                                 : 'bg-white/5 border-white/10 text-neutral-300 hover:border-white/20'
                                         }`}
                                     >
@@ -196,7 +196,7 @@ export default function AIGatewaysPage() {
                                         <span
                                             className={`inline-flex items-center w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ${
                                                 api.smartRoutingEnabled
-                                                    ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.45)]'
+                                                    ? 'bg-[#CBFF2E] shadow-[0_0_10px_rgba(203,255,46,0.45)]'
                                                     : 'bg-neutral-700'
                                             }`}
                                         >
@@ -208,7 +208,7 @@ export default function AIGatewaysPage() {
                                         </span>
                                         <span
                                             className={`text-[10px] font-mono font-bold uppercase w-6 text-left ${
-                                                api.smartRoutingEnabled ? 'text-cyan-400' : 'text-neutral-500'
+                                                api.smartRoutingEnabled ? 'text-[#CBFF2E]' : 'text-neutral-500'
                                             }`}
                                         >
                                             {api.smartRoutingEnabled ? 'ON' : 'OFF'}
@@ -222,7 +222,7 @@ export default function AIGatewaysPage() {
                                                 data: { routingStrategy: e.target.value }
                                             })
                                         }
-                                        className="bg-[#111111] border border-white/10 rounded-lg px-2.5 py-1.5 text-[12px] font-sans text-neutral-200 focus:outline-none focus:border-cyan-400/50 cursor-pointer"
+                                        className="bg-[#111111] border border-white/10 rounded-lg px-2.5 py-1.5 text-[12px] font-sans text-neutral-200 focus:outline-none focus:border-[#CBFF2E]/60 cursor-pointer"
                                         aria-label="Routing Strategy"
                                     >
                                         <option value="cost-optimized">Cost-Optimized</option>
@@ -242,7 +242,7 @@ export default function AIGatewaysPage() {
                                         onClick={() => setSelectedRouteId(api.id)}
                                         className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-sans font-bold transition-colors cursor-pointer ${
                                             (selectedRouteId || apisList[0]?.id) === api.id
-                                                ? 'border-cyan-500/50 bg-cyan-500/15 text-cyan-300'
+                                                ? 'border-[#CBFF2E]/50 bg-[#CBFF2E]/15 text-[#CBFF2E]'
                                                 : 'border-white/10 bg-[#141414] text-neutral-300 hover:border-white/25 hover:text-white'
                                         }`}
                                     >
@@ -323,7 +323,7 @@ export default function AIGatewaysPage() {
                                                 setNewRouteSlug(preset.slug);
                                                 setNewRouteUrl(preset.url);
                                             }}
-                                            className="px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/10 hover:border-cyan-400/40 text-[11px] font-sans font-bold text-neutral-200 transition-colors cursor-pointer"
+                                            className="px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/10 hover:border-[#CBFF2E]/40 text-[11px] font-sans font-bold text-neutral-200 transition-colors cursor-pointer"
                                         >
                                             {preset.label}
                                         </button>

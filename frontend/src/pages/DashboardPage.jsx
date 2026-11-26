@@ -486,7 +486,7 @@ response = client.chat.completions.create(
                                             }
                                         }}
                                         placeholder="Paste flw_... virtual key (auto-fills after Step 1 key creation)"
-                                        className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50"
+                                        className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#CBFF2E]/60"
                                     />
                                     <button
                                         type="button"
@@ -522,12 +522,12 @@ response = client.chat.completions.create(
                                             </span>
                                             <span className="text-neutral-400">{step2TestResult.elapsedMs}ms</span>
                                             {step2TestResult.provider && (
-                                                <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-300">
+                                                <span className="px-2 py-0.5 rounded bg-[#CBFF2E]/10 border border-[#CBFF2E]/25 text-[#CBFF2E]">
                                                     provider: {step2TestResult.provider}
                                                 </span>
                                             )}
                                             {step2TestResult.modelSelected && (
-                                                <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-300">
+                                                <span className="px-2 py-0.5 rounded bg-[#CBFF2E]/10 border border-[#CBFF2E]/25 text-[#CBFF2E]">
                                                     model: {step2TestResult.modelSelected}
                                                 </span>
                                             )}
@@ -538,7 +538,7 @@ response = client.chat.completions.create(
                                             )}
                                         </div>
                                         {step2TestResult.routerReason && (
-                                            <p className="text-[11px] font-mono text-cyan-300/90">
+                                            <p className="text-[11px] font-mono text-[#CBFF2E]/90">
                                                 {step2TestResult.routerReason}
                                             </p>
                                         )}
@@ -601,7 +601,7 @@ response = client.chat.completions.create(
                                 <div className="p-4 rounded-xl bg-[#060507] border border-[rgba(153,27,27,0.3)] space-y-2.5">
                                     <div className="flex justify-between items-center">
                                         <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Drop-in Base URL</span>
-                                        <span className="font-mono text-cyan-400">/v1/chat/completions</span>
+                                        <span className="font-mono text-[#CBFF2E]">/v1/chat/completions</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Target Upstream URL</span>
